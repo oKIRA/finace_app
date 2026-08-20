@@ -1,0 +1,6 @@
+{
+  "name": "Finance App",
+  "description": "Aplicativo completo de controle financeiro pessoal com gestão de contas, cartões, faturas, transações, orçamentos, metas e relatórios.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
