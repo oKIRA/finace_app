@@ -55,6 +55,9 @@ export const RecentTransactions: React.FC<{ onNavigateToTransactions: () => void
         <div className="divide-y divide-slate-100">
           {recentList.map((t) => {
             const cat = catMap.get(t.categoryId);
+            const categoryName = cat?.name || t.categorySnapshot?.name || 'Categoria removida';
+            const categoryColor = cat?.color || t.categorySnapshot?.color || '#94A3B8';
+            const categoryIcon = cat?.icon || t.categorySnapshot?.icon;
             const isIncome = t.type === 'income';
             const isCard = t.type === 'card_expense';
             const isTransfer = t.type === 'transfer';
@@ -65,13 +68,13 @@ export const RecentTransactions: React.FC<{ onNavigateToTransactions: () => void
                   <div
                     className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shrink-0 border"
                     style={{
-                      backgroundColor: `${cat?.color || '#94A3B8'}15`,
-                      borderColor: `${cat?.color || '#94A3B8'}30`,
-                      color: cat?.color || '#64748B',
+                      backgroundColor: `${categoryColor}15`,
+                      borderColor: `${categoryColor}30`,
+                      color: categoryColor,
                     }}
                   >
-                    {cat?.icon ? (
-                      <DynamicIcon name={cat.icon} className="w-4 h-4" />
+                    {categoryIcon ? (
+                      <DynamicIcon name={categoryIcon} className="w-4 h-4" />
                     ) : isIncome ? (
                       <ArrowUpRight className="w-4 h-4 text-emerald-600" />
                     ) : isCard ? (
@@ -86,7 +89,7 @@ export const RecentTransactions: React.FC<{ onNavigateToTransactions: () => void
                   <div className="min-w-0 flex-1">
                     <p className="text-xs font-bold text-slate-800 truncate">{t.description}</p>
                     <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] text-slate-400 truncate">
-                      <span className="truncate">{cat?.name || (isTransfer ? 'Transferência' : 'Geral')}</span>
+                      <span className="truncate">{t.categoryId ? categoryName : isTransfer ? 'Transferência' : 'Categoria removida'}</span>
                       <span>•</span>
                       <span className="shrink-0">{formatDateBR(t.date)}</span>
                       {t.isInstallment && (

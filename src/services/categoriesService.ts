@@ -3,6 +3,7 @@ import { db } from '../lib/firebase/config';
 import { Category } from '../types';
 import {
   getLocalData,
+  hasLocalData,
   setLocalData,
   saveLocalItem,
   removeLocalItem,
@@ -35,7 +36,7 @@ export const categoriesService = {
   async getCategories(userId: string): Promise<Category[]> {
     if (!userId) return [];
     const local = getLocalData<Category>(userId, 'categories');
-    if (local.length > 0) {
+    if (hasLocalData(userId, 'categories')) {
       return local;
     }
 

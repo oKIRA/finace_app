@@ -23,7 +23,6 @@ import { ReportsView } from './components/reports/ReportsView';
 import { SettingsView } from './components/settings/SettingsView';
 import { LoginPage } from './components/auth/LoginPage';
 import { NavTab } from './types';
-import { Wallet } from 'lucide-react';
 
 const MainAppContent: React.FC = () => {
   const { user, loading } = useAuth();
@@ -33,8 +32,8 @@ const MainAppContent: React.FC = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-white px-4">
-        <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-3 animate-pulse">
-          <Wallet className="w-6 h-6" />
+        <div className="w-12 h-12 rounded-2xl overflow-hidden mb-3 animate-pulse">
+          <img src="/assets/finance-app-logo.svg" alt="Finance App" className="w-full h-full object-cover" />
         </div>
         <p className="text-xs font-bold text-slate-400 tracking-wider uppercase">Carregando Finanças...</p>
       </div>
@@ -60,7 +59,7 @@ const MainAppContent: React.FC = () => {
           />
 
           {/* Main Layout Area */}
-          <div className="flex-1 flex flex-col lg:pl-64 min-w-0 pb-24 lg:pb-8">
+          <div className="flex-1 flex flex-col xl:pl-64 min-w-0 pb-24 xl:pb-8">
             {/* Header with Month Selector & Quick Action Buttons */}
             <Header
               activeTab={activeTab}
@@ -68,7 +67,7 @@ const MainAppContent: React.FC = () => {
             />
 
             {/* Page View Body */}
-            <main className="flex-1 px-3 sm:px-6 lg:px-8 py-4 sm:py-6 max-w-7xl w-full mx-auto">
+            <main className="flex-1 px-3 sm:px-6 xl:px-8 py-4 sm:py-6 max-w-7xl w-full mx-auto">
               {activeTab === 'dashboard' && (
                 <DashboardView onNavigateToTransactions={() => setActiveTab('transactions')} />
               )}

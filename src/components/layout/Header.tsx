@@ -44,14 +44,15 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileMenu }) => {
   }, [isMonthPickerOpen]);
 
   return (
-    <header className="bg-white border-b border-slate-200 sticky top-0 z-20 px-3 sm:px-6 lg:px-8 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+    <header className="bg-white border-b border-slate-200 sticky top-0 z-20 px-3 sm:px-6 xl:px-8 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
       {/* Left: User Greeting & Mobile Menu Trigger */}
       <div className="flex items-center justify-between sm:justify-start gap-2.5 min-w-0">
         <div className="flex items-center gap-2.5 min-w-0">
           <button
             onClick={onToggleMobileMenu}
             id="btn-mobile-menu"
-            className="p-2 rounded-xl text-slate-600 hover:bg-slate-100 lg:hidden active:scale-95 transition-all shrink-0"
+            className="p-2 rounded-xl text-slate-600 hover:bg-slate-100 xl:hidden active:scale-95 transition-all shrink-0"
+            aria-label="Abrir menu de navegação"
             title="Menu Lateral"
           >
             <Menu className="w-5 h-5" />

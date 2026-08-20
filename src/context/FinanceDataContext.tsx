@@ -20,6 +20,7 @@ import { invoicesService } from '../services/invoicesService';
 import { recurringService } from '../services/recurringService';
 import { budgetsService } from '../services/budgetsService';
 import { goalsService } from '../services/goalsService';
+import { hasLocalData } from '../lib/storage/syncStorage';
 import {
   calculateMonthSummary,
   calculateExpensesByCategory,
@@ -137,7 +138,7 @@ export const FinanceDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
       }
 
       let resolvedCats = cats;
-      if (resolvedCats.length === 0) {
+      if (resolvedCats.length === 0 && !hasLocalData(uid, 'categories')) {
         try {
           resolvedCats = await categoriesService.seedDefaultCategories(uid);
         } catch (e) {

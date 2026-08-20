@@ -42,12 +42,19 @@ export interface Category {
 export type PaymentMethod = 'cash' | 'debit' | 'credit' | 'pix' | 'transfer';
 export type TransactionType = 'income' | 'expense' | 'transfer' | 'card_expense' | 'card_payment';
 
+export interface CategorySnapshot {
+  name: string;
+  icon: string;
+  color: string;
+}
+
 export interface Transaction {
   id: string;
   type: TransactionType;
   amount: number; // in cents (always positive)
   description: string;
   categoryId: string;
+  categorySnapshot?: CategorySnapshot;
   accountId: string; // origin bank account or paid-from account
   targetAccountId?: string; // used for transfers
   cardId?: string; // used for credit card purchases & payments

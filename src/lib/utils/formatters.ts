@@ -29,6 +29,11 @@ export function formatCurrency(cents: number | undefined | null, showSign = fals
   return formatted;
 }
 
+export function sanitizeCurrencyInput(value: string): string {
+  if (typeof value !== 'string') return '';
+  return value.replace(/[^\d,.-]/g, '');
+}
+
 export function parseCurrencyToCents(value: string | number): number {
   if (typeof value === 'number') {
     return Math.round(value * 100);
@@ -38,8 +43,7 @@ export function parseCurrencyToCents(value: string | number): number {
     return 0;
   }
 
-  // Remove currency symbol, whitespace, dots, and convert comma to dot
-  const cleanStr = value
+  const cleanStr = sanitizeCurrencyInput(value)
     .replace(/[R$\s]/g, '')
     .replace(/\./g, '')
     .replace(',', '.');

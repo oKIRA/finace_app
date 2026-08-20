@@ -295,10 +295,11 @@ export const GoalsView: React.FC = () => {
                 </label>
                 <input
                   type="text"
+                  inputMode="decimal"
                   required
                   placeholder="Ex: 200,00"
                   value={depositAmountStr}
-                  onChange={(e) => setDepositAmountStr(e.target.value)}
+                  onChange={(e) => setDepositAmountStr(e.target.value.replace(/[^\d,.-]/g, ''))}
                   className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                 />
               </div>
@@ -369,10 +370,11 @@ export const GoalsView: React.FC = () => {
                   </label>
                   <input
                     type="text"
+                    inputMode="decimal"
                     required
                     placeholder="Ex: 10000,00"
                     value={targetAmountStr}
-                    onChange={(e) => setTargetAmountStr(e.target.value)}
+                    onChange={(e) => setTargetAmountStr(e.target.value.replace(/[^\d,.-]/g, ''))}
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:bg-white focus:outline-none"
                   />
                 </div>

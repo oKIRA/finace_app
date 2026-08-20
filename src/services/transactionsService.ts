@@ -8,7 +8,7 @@ import {
   writeBatch,
 } from 'firebase/firestore';
 import { db } from '../lib/firebase/config';
-import { Transaction, PaymentMethod } from '../types';
+import { CategorySnapshot, Transaction, PaymentMethod } from '../types';
 import { accountsService } from './accountsService';
 import { parseDateParts, getInvoiceMonthForPurchase } from '../lib/utils/dates';
 import {
@@ -126,13 +126,14 @@ export const transactionsService = {
       totalAmount: number;
       cardId: string;
       categoryId: string;
+      categorySnapshot?: CategorySnapshot;
       date: string;
       installmentsCount: number;
       closingDay: number;
       notes?: string;
     }
   ): Promise<Transaction[]> {
-    const { installmentsCount, totalAmount, date, closingDay, description, cardId, categoryId, notes } = purchase;
+    const { installmentsCount, totalAmount, date, closingDay, description, cardId, categoryId, categorySnapshot, notes } = purchase;
     const count = Math.max(1, installmentsCount);
 
     const baseAmount = Math.floor(totalAmount / count);
@@ -158,6 +159,7 @@ export const transactionsService = {
         amount: installmentAmount,
         description: count > 1 ? `${description} (${i}/${count})` : description,
         categoryId,
+        categorySnapshot,
         accountId: '',
         cardId,
         date,

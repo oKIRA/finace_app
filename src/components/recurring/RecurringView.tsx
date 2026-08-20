@@ -191,7 +191,7 @@ export const RecurringView: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {recurring.map((bill) => {
           const isIncome = bill.type === 'income';
-          const catName = catMap.get(bill.categoryId) || 'Geral';
+          const catName = catMap.get(bill.categoryId) || 'Categoria removida';
 
           return (
             <div
@@ -348,10 +348,11 @@ export const RecurringView: React.FC = () => {
                   </label>
                   <input
                     type="text"
+                    inputMode="decimal"
                     required
                     placeholder="Ex: 55,90"
                     value={amountStr}
-                    onChange={(e) => setAmountStr(e.target.value)}
+                    onChange={(e) => setAmountStr(e.target.value.replace(/[^\d,.-]/g, ''))}
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:bg-white focus:outline-none"
                   />
                 </div>
@@ -362,10 +363,16 @@ export const RecurringView: React.FC = () => {
                   </label>
                   <input
                     type="number"
+                    inputMode="numeric"
                     min={1}
                     max={31}
                     value={dueDay}
-                    onChange={(e) => setDueDay(Number(e.target.value))}
+                    onChange={(e) => {
+                      const value = Number(e.target.value);
+                      if (!Number.isNaN(value)) {
+                        setDueDay(Math.min(31, Math.max(1, value)));
+                      }
+                    }}
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:bg-white focus:outline-none"
                   />
                 </div>

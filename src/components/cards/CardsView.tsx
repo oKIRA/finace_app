@@ -14,7 +14,7 @@ import { useFinanceData } from '../../context/FinanceDataContext';
 import { useAuth } from '../../context/AuthContext';
 import { cardsService } from '../../services/cardsService';
 import { formatCurrency } from '../../lib/utils/formatters';
-import { CreditCard, Invoice } from '../../types';
+import { CardBrand, CreditCard, Invoice } from '../../types';
 
 export const CardsView: React.FC<{ onNavigateToInvoices: () => void }> = ({
   onNavigateToInvoices,
@@ -28,7 +28,7 @@ export const CardsView: React.FC<{ onNavigateToInvoices: () => void }> = ({
   // Form states
   const [name, setName] = useState('');
   const [bank, setBank] = useState('');
-  const [brand, setBrand] = useState('Mastercard');
+  const [brand, setBrand] = useState<CardBrand>('mastercard');
   const [limitStr, setLimitStr] = useState('');
   const [closingDay, setClosingDay] = useState(1);
   const [dueDay, setDueDay] = useState(10);
@@ -40,7 +40,7 @@ export const CardsView: React.FC<{ onNavigateToInvoices: () => void }> = ({
     setEditingCard(null);
     setName('');
     setBank('');
-    setBrand('Mastercard');
+    setBrand('mastercard');
     setLimitStr('');
     setClosingDay(1);
     setDueDay(10);
@@ -53,7 +53,7 @@ export const CardsView: React.FC<{ onNavigateToInvoices: () => void }> = ({
     setEditingCard(card);
     setName(card.name);
     setBank(card.bank);
-    setBrand(card.brand || 'Mastercard');
+    setBrand(card.brand || 'mastercard');
     setLimitStr(((card.limit || 0) / 100).toFixed(2));
     setClosingDay(card.closingDay);
     setDueDay(card.dueDay);
@@ -341,14 +341,14 @@ export const CardsView: React.FC<{ onNavigateToInvoices: () => void }> = ({
                   </label>
                   <select
                     value={brand}
-                    onChange={(e) => setBrand(e.target.value)}
+                    onChange={(e) => setBrand(e.target.value as CardBrand)}
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:bg-white focus:outline-none"
                   >
-                    <option value="Mastercard">Mastercard</option>
-                    <option value="Visa">Visa</option>
-                    <option value="Elo">Elo</option>
-                    <option value="Amex">Amex</option>
-                    <option value="Hipercard">Hipercard</option>
+                    <option value="mastercard">Mastercard</option>
+                    <option value="visa">Visa</option>
+                    <option value="elo">Elo</option>
+                    <option value="amex">Amex</option>
+                    <option value="hipercard">Hipercard</option>
                   </select>
                 </div>
               </div>
@@ -359,10 +359,11 @@ export const CardsView: React.FC<{ onNavigateToInvoices: () => void }> = ({
                 </label>
                 <input
                   type="text"
+                  inputMode="decimal"
                   required
                   placeholder="Ex: 5000,00"
                   value={limitStr}
-                  onChange={(e) => setLimitStr(e.target.value)}
+                  onChange={(e) => setLimitStr(e.target.value.replace(/[^\d,.-]/g, ''))}
                   className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:bg-white focus:outline-none"
                 />
               </div>
@@ -374,10 +375,16 @@ export const CardsView: React.FC<{ onNavigateToInvoices: () => void }> = ({
                   </label>
                   <input
                     type="number"
+                    inputMode="numeric"
                     min={1}
                     max={31}
                     value={closingDay}
-                    onChange={(e) => setClosingDay(Number(e.target.value))}
+                    onChange={(e) => {
+                      const value = Number(e.target.value);
+                      if (!Number.isNaN(value)) {
+                        setClosingDay(Math.min(31, Math.max(1, value)));
+                      }
+                    }}
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:bg-white focus:outline-none"
                   />
                 </div>
@@ -388,10 +395,16 @@ export const CardsView: React.FC<{ onNavigateToInvoices: () => void }> = ({
                   </label>
                   <input
                     type="number"
+                    inputMode="numeric"
                     min={1}
                     max={31}
                     value={dueDay}
-                    onChange={(e) => setDueDay(Number(e.target.value))}
+                    onChange={(e) => {
+                      const value = Number(e.target.value);
+                      if (!Number.isNaN(value)) {
+                        setDueDay(Math.min(31, Math.max(1, value)));
+                      }
+                    }}
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:bg-white focus:outline-none"
                   />
                 </div>

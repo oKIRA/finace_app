@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  Wallet,
   ShieldCheck,
   TrendingUp,
   CreditCard,
@@ -102,8 +101,8 @@ export const LoginPage: React.FC = () => {
       <div className="w-full max-w-md relative z-10">
         {/* Brand Logo & Title */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white shadow-lg shadow-emerald-900/40 mb-3">
-            <Wallet className="w-7 h-7" />
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl overflow-hidden shadow-lg shadow-emerald-900/40 mb-3">
+            <img src="/assets/finance-app-logo.svg" alt="Finance App" className="w-full h-full object-cover" />
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
             Controle Financeiro

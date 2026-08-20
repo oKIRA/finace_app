@@ -322,9 +322,10 @@ export const AccountsView: React.FC = () => {
                   </label>
                   <input
                     type="text"
+                    inputMode="decimal"
                     placeholder="0,00"
                     value={initialBalanceStr}
-                    onChange={(e) => setInitialBalanceStr(e.target.value)}
+                    onChange={(e) => setInitialBalanceStr(e.target.value.replace(/[^\d,.-]/g, ''))}
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:bg-white focus:outline-none"
                   />
                 </div>

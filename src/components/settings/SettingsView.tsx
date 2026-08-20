@@ -64,7 +64,7 @@ export const SettingsView: React.FC = () => {
 
   const handleDeleteCategory = async (cat: Category) => {
     if (!user) return;
-    if (window.confirm(`Deseja realmente excluir a categoria "${cat.name}"?`)) {
+    if (window.confirm(`Deseja realmente excluir a categoria "${cat.name}"? Ela será removida das opções futuras, mas as referências antigas serão preservadas.`)) {
       try {
         await categoriesService.deleteCategory(user.uid, cat.id);
         await refreshData();
@@ -221,7 +221,7 @@ export const SettingsView: React.FC = () => {
         <div className="flex items-center justify-between gap-2">
           <div className="min-w-0">
             <h3 className="text-sm font-bold text-slate-800 tracking-tight truncate">
-              Categorias Personalizadas
+              Categorias
             </h3>
             <p className="text-xs text-slate-400 truncate">
               {categories.length} categorias cadastradas para receitas e despesas
@@ -250,14 +250,14 @@ export const SettingsView: React.FC = () => {
                 <span className="truncate text-slate-800 font-semibold">{cat.name}</span>
               </div>
 
-              {!cat.isDefault && (
-                <button
-                  onClick={() => handleDeleteCategory(cat)}
-                  className="text-slate-300 hover:text-rose-600 p-1 shrink-0 ml-1"
-                >
-                  <Trash2 className="w-3 h-3" />
-                </button>
-              )}
+              <button
+                onClick={() => handleDeleteCategory(cat)}
+                aria-label={`Excluir categoria ${cat.name}`}
+                title={`Excluir categoria ${cat.name}`}
+                className="text-slate-300 hover:text-rose-600 p-1 shrink-0 ml-1"
+              >
+                <Trash2 className="w-3 h-3" />
+              </button>
             </div>
           ))}
         </div>

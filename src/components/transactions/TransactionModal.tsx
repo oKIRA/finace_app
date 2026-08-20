@@ -81,6 +81,15 @@ export const TransactionModal: React.FC = () => {
     }
   }, [activeTab, categories]);
 
+  useEffect(() => {
+    if (!isTransactionModalOpen) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closeTransactionModal();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isTransactionModalOpen, closeTransactionModal]);
+
   const resetForm = () => {
     setDescription('');
     setAmountStr('');
@@ -152,12 +161,22 @@ export const TransactionModal: React.FC = () => {
         }
       }
 
+      const selectedCategory = categories.find((category) => category.id === effectiveCategoryId);
+      const categorySnapshot = selectedCategory
+        ? {
+            name: selectedCategory.name,
+            icon: selectedCategory.icon,
+            color: selectedCategory.color,
+          }
+        : undefined;
+
       if (activeTab === 'income') {
         await transactionsService.createTransaction(user.uid, {
           type: 'income',
           amount: amountCents,
           description: description.trim(),
           categoryId: effectiveCategoryId,
+          categorySnapshot,
           accountId: effectiveAccountId,
           date,
           paymentMethod,
@@ -169,6 +188,7 @@ export const TransactionModal: React.FC = () => {
           amount: amountCents,
           description: description.trim(),
           categoryId: effectiveCategoryId,
+          categorySnapshot,
           accountId: effectiveAccountId,
           date,
           paymentMethod,
@@ -203,6 +223,7 @@ export const TransactionModal: React.FC = () => {
           totalAmount: amountCents,
           cardId: effectiveCardId,
           categoryId: effectiveCategoryId,
+          categorySnapshot,
           date,
           installmentsCount: isInstallment ? Math.max(1, installmentsCount) : 1,
           closingDay,
@@ -257,14 +278,20 @@ export const TransactionModal: React.FC = () => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh]">
+      <div
+        className="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh]"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="transaction-modal-title"
+      >
         {/* Modal Header & Tabs */}
         <div className="bg-slate-900 text-white p-4 sm:p-5 pb-0">
           <div className="flex items-center justify-between mb-3 sm:mb-4">
-            <h3 className="text-base font-bold tracking-tight">Novo Lançamento</h3>
+            <h3 id="transaction-modal-title" className="text-base font-bold tracking-tight">Novo Lançamento</h3>
             <button
               onClick={closeTransactionModal}
               id="btn-close-modal"
+              aria-label="Fechar lançamento"
               className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors"
             >
               <X className="w-5 h-5" />
@@ -272,7 +299,7 @@ export const TransactionModal: React.FC = () => {
           </div>
 
           {/* 4 Tabs */}
-          <div className="grid grid-cols-4 gap-1 p-1 bg-slate-950/60 rounded-xl mb-3 sm:mb-4 text-[11px] sm:text-xs font-semibold">
+          <div className="grid grid-cols-4 gap-1 p-1 bg-slate-950/60 rounded-xl mb-3 sm:mb-4 text-[11px] sm:text-xs font-semibold" role="tablist" aria-label="Tipo de lançamento">
             <button
               type="button"
               onClick={() => {
@@ -280,6 +307,9 @@ export const TransactionModal: React.FC = () => {
                 setErrorMessage(null);
               }}
               id="tab-expense"
+              role="tab"
+              aria-selected={activeTab === 'expense'}
+              aria-controls="transaction-form"
               className={`py-2 px-1 rounded-lg flex flex-col sm:flex-row items-center justify-center gap-1 transition-all ${
                 activeTab === 'expense'
                   ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
@@ -297,6 +327,9 @@ export const TransactionModal: React.FC = () => {
                 setErrorMessage(null);
               }}
               id="tab-income"
+              role="tab"
+              aria-selected={activeTab === 'income'}
+              aria-controls="transaction-form"
               className={`py-2 px-1 rounded-lg flex flex-col sm:flex-row items-center justify-center gap-1 transition-all ${
                 activeTab === 'income'
                   ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
@@ -314,6 +347,9 @@ export const TransactionModal: React.FC = () => {
                 setErrorMessage(null);
               }}
               id="tab-card"
+              role="tab"
+              aria-selected={activeTab === 'card'}
+              aria-controls="transaction-form"
               className={`py-2 px-1 rounded-lg flex flex-col sm:flex-row items-center justify-center gap-1 transition-all ${
                 activeTab === 'card'
                   ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
@@ -331,6 +367,9 @@ export const TransactionModal: React.FC = () => {
                 setErrorMessage(null);
               }}
               id="tab-transfer"
+              role="tab"
+              aria-selected={activeTab === 'transfer'}
+              aria-controls="transaction-form"
               className={`py-2 px-1 rounded-lg flex flex-col sm:flex-row items-center justify-center gap-1 transition-all ${
                 activeTab === 'transfer'
                   ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
@@ -344,16 +383,16 @@ export const TransactionModal: React.FC = () => {
         </div>
 
         {/* Modal Form */}
-        <form onSubmit={handleSubmit} className="p-4 sm:p-6 overflow-y-auto space-y-3.5 sm:space-y-4 text-slate-700 text-sm custom-scrollbar">
+        <form id="transaction-form" role="tabpanel" onSubmit={handleSubmit} className="p-4 sm:p-6 overflow-y-auto space-y-3.5 sm:space-y-4 text-slate-700 text-sm custom-scrollbar">
           {errorMessage && (
-            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium">
+            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium" role="alert" aria-live="assertive">
               {errorMessage}
             </div>
           )}
 
           {/* Amount input */}
           <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+            <label htmlFor="input-transaction-amount" className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
               Valor (R$)
             </label>
             <div className="relative">
@@ -362,8 +401,9 @@ export const TransactionModal: React.FC = () => {
               </span>
               <input
                 type="text"
+                inputMode="decimal"
                 value={amountStr}
-                onChange={(e) => setAmountStr(e.target.value)}
+                onChange={(e) => setAmountStr(e.target.value.replace(/[^\d,.-]/g, ''))}
                 placeholder="0,00"
                 id="input-transaction-amount"
                 className="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-lg font-bold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
@@ -375,7 +415,7 @@ export const TransactionModal: React.FC = () => {
 
           {/* Description */}
           <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+            <label htmlFor="input-transaction-description" className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
               Descrição
             </label>
             <input
@@ -400,7 +440,7 @@ export const TransactionModal: React.FC = () => {
           {/* Category Selection (Not needed for simple bank transfers) */}
           {activeTab !== 'transfer' && (
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+              <label htmlFor="select-transaction-category" className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
                 Categoria
               </label>
               <select

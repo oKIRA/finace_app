@@ -2,6 +2,18 @@
 
 const STORAGE_PREFIX = 'finapp_v1_';
 
+export function hasLocalData(userId: string, collectionName: string): boolean {
+  if (!userId) return false;
+  try {
+    const raw = localStorage.getItem(`${STORAGE_PREFIX}${userId}_${collectionName}`);
+    if (raw === null) return false;
+    return Array.isArray(JSON.parse(raw));
+  } catch (e) {
+    console.warn(`Error checking local storage for ${collectionName}:`, e);
+    return false;
+  }
+}
+
 export function getLocalData<T>(userId: string, collectionName: string): T[] {
   if (!userId) return [];
   try {

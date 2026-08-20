@@ -42,7 +42,7 @@ export const MobileNav: React.FC<MobileNavProps> = ({
   ];
 
   return (
-    <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 px-2 py-1.5 flex items-center justify-around z-40 shadow-2xl safe-area-pb">
+    <div className="xl:hidden fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 px-2 py-1.5 flex items-center justify-around z-40 shadow-2xl safe-area-pb" aria-label="Navegação rápida">
       {primaryItems.map((item) => {
         const Icon = item.icon;
         const isActive = selectedTab === item.key;
@@ -51,6 +51,8 @@ export const MobileNav: React.FC<MobileNavProps> = ({
             key={item.key}
             onClick={() => handleTabClick(item.key)}
             id={`mobile-nav-${item.key}`}
+            aria-current={isActive ? 'page' : undefined}
+            aria-label={item.label}
             className={`flex flex-col items-center justify-center gap-0.5 py-1 px-3 rounded-xl transition-all ${
               isActive
                 ? 'text-emerald-400 font-bold bg-emerald-950/40'
@@ -67,6 +69,7 @@ export const MobileNav: React.FC<MobileNavProps> = ({
       <button
         onClick={onOpenMoreMenu}
         id="mobile-nav-more"
+        aria-label="Abrir mais opções"
         className="flex flex-col items-center justify-center gap-0.5 py-1 px-3 rounded-xl text-slate-400 hover:text-slate-200 transition-all active:scale-95"
       >
         <Menu className="w-5 h-5" />

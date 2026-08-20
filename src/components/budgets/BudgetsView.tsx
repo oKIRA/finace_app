@@ -243,10 +243,11 @@ export const BudgetsView: React.FC = () => {
                 </label>
                 <input
                   type="text"
+                  inputMode="decimal"
                   required
                   placeholder="Ex: 800,00"
                   value={limitStr}
-                  onChange={(e) => setLimitStr(e.target.value)}
+                  onChange={(e) => setLimitStr(e.target.value.replace(/[^\d,.-]/g, ''))}
                   className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                 />
               </div>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   LayoutDashboard,
   ArrowLeftRight,
@@ -11,7 +11,6 @@ import {
   FileBarChart2,
   Settings,
   LogOut,
-  Wallet,
   X,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -48,10 +47,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const { user, signOut } = useAuth();
   const selectedTab = currentTab || activeTab || 'dashboard';
 
+  const handleClose = () => {
+    onClose?.();
+    requestAnimationFrame(() => document.getElementById('btn-mobile-menu')?.focus());
+  };
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') handleClose();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen]);
+
   const handleTabClick = (key: NavItemKey) => {
     if (onSelectTab) onSelectTab(key);
     if (setActiveTab) setActiveTab(key);
-    if (onClose) onClose();
+    if (onClose) handleClose();
   };
 
   const navItems: Array<{
@@ -74,10 +87,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const sidebarContent = (
     <div className="flex flex-col h-full bg-slate-900 text-slate-200 border-r border-slate-800 select-none">
       {/* Brand Header */}
-      <div className="p-4 sm:p-5 lg:p-6 border-b border-slate-800/80 flex items-center justify-between gap-3">
+      <div className="p-4 sm:p-5 xl:p-6 border-b border-slate-800/80 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-semibold shadow-inner shrink-0">
-            <Wallet className="w-5 h-5 text-emerald-400" />
+          <div className="w-10 h-10 rounded-xl overflow-hidden shadow-inner shrink-0">
+            <img src="/assets/finance-app-logo.svg" alt="Finance App" className="w-full h-full object-cover" />
           </div>
           <div className="min-w-0">
             <h1 className="font-bold text-white text-sm sm:text-base tracking-tight flex items-center gap-1.5 truncate">
@@ -94,8 +107,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {onClose && (
           <button
             onClick={onClose}
-            className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="xl:hidden p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
             title="Fechar Menu"
+            aria-label="Fechar menu"
           >
             <X className="w-5 h-5" />
           </button>
@@ -112,6 +126,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               key={item.key}
               onClick={() => handleTabClick(item.key)}
               id={`nav-item-${item.key}`}
+              aria-current={isActive ? 'page' : undefined}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all duration-150 text-left ${
                 isActive
                   ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-950 font-semibold'
@@ -147,6 +162,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             onClick={() => signOut()}
             id="btn-logout"
             title="Encerrar Sessão"
+            aria-label="Encerrar sessão"
             className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition-colors shrink-0"
           >
             <LogOut className="w-4 h-4" />
@@ -158,22 +174,27 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <>
-      {/* 1. Permanent Desktop Sidebar (lg: screens and above) */}
-      <aside className="hidden lg:flex flex-col w-64 shrink-0 h-screen sticky top-0 z-30">
+      {/* 1. Permanent Desktop Sidebar (xl: screens and above) */}
+      <aside className="hidden xl:flex flex-col w-64 shrink-0 h-screen sticky top-0 z-30">
         {sidebarContent}
       </aside>
 
       {/* 2. Mobile & Tablet Slide-Over Drawer with Backdrop */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden flex">
+        <div className="fixed inset-0 z-50 xl:hidden flex">
           {/* Backdrop */}
           <div
             className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs transition-opacity animate-in fade-in"
-            onClick={onClose}
+            onClick={handleClose}
           />
 
           {/* Drawer Panel */}
-          <div className="relative w-72 max-w-[85vw] h-full shadow-2xl z-10 animate-in slide-in-from-left duration-200">
+          <div
+            className="relative w-72 max-w-[85vw] h-full shadow-2xl z-10 animate-in slide-in-from-left duration-200"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Menu de navegação"
+          >
             {sidebarContent}
           </div>
         </div>

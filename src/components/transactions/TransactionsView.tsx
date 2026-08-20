@@ -219,6 +219,9 @@ export const TransactionsView: React.FC = () => {
             <div className="md:hidden divide-y divide-slate-100">
               {filteredTransactions.map((t) => {
                 const cat = catMap.get(t.categoryId);
+                const categoryName = cat?.name || t.categorySnapshot?.name || 'Categoria removida';
+                const categoryColor = cat?.color || t.categorySnapshot?.color || '#94A3B8';
+                const categoryIcon = cat?.icon || t.categorySnapshot?.icon;
                 const isIncome = t.type === 'income';
                 const isCard = t.type === 'card_expense';
                 const isTransfer = t.type === 'transfer';
@@ -232,13 +235,13 @@ export const TransactionsView: React.FC = () => {
                       <div
                         className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border"
                         style={{
-                          backgroundColor: `${cat?.color || '#94A3B8'}15`,
-                          borderColor: `${cat?.color || '#94A3B8'}30`,
-                          color: cat?.color || '#64748B',
+                          backgroundColor: `${categoryColor}15`,
+                          borderColor: `${categoryColor}30`,
+                          color: categoryColor,
                         }}
                       >
-                        {cat?.icon ? (
-                          <DynamicIcon name={cat.icon} className="w-4 h-4" />
+                        {categoryIcon ? (
+                          <DynamicIcon name={categoryIcon} className="w-4 h-4" />
                         ) : isIncome ? (
                           <ArrowUpRight className="w-4 h-4 text-emerald-600" />
                         ) : isCard ? (
@@ -260,7 +263,7 @@ export const TransactionsView: React.FC = () => {
                           )}
                         </div>
                         <div className="flex items-center gap-1.5 text-[11px] text-slate-400 truncate mt-0.5">
-                          <span className="truncate">{cat?.name || sourceName}</span>
+                          <span className="truncate">{t.categoryId ? categoryName : sourceName}</span>
                           <span>•</span>
                           <span className="shrink-0">{formatDateBR(t.date)}</span>
                         </div>
@@ -313,6 +316,7 @@ export const TransactionsView: React.FC = () => {
                 <tbody className="divide-y divide-slate-100">
                   {filteredTransactions.map((t) => {
                     const cat = catMap.get(t.categoryId);
+                    const categoryName = cat?.name || t.categorySnapshot?.name || 'Categoria removida';
                     const isIncome = t.type === 'income';
                     const isCard = t.type === 'card_expense';
                     const isTransfer = t.type === 'transfer';
@@ -345,18 +349,18 @@ export const TransactionsView: React.FC = () => {
 
                         {/* Category */}
                         <td className="py-3 px-4">
-                          {cat ? (
+                          {cat || t.categorySnapshot ? (
                             <div className="flex items-center gap-1.5">
                               <span
                                 className="w-2 h-2 rounded-full shrink-0"
-                                style={{ backgroundColor: cat.color }}
+                                style={{ backgroundColor: cat?.color || t.categorySnapshot?.color }}
                               />
-                              <span className="text-slate-700 font-medium truncate">{cat.name}</span>
+                              <span className="text-slate-700 font-medium truncate">{categoryName}</span>
                             </div>
                           ) : isTransfer ? (
                             <span className="text-blue-600 font-medium">Transferência</span>
                           ) : (
-                            <span className="text-slate-400">Geral</span>
+                            <span className="text-slate-400">Categoria removida</span>
                           )}
                         </td>
 
