@@ -1,12 +1,12 @@
 {
-  "projectId": "meta-victory-6xctm",
-  "appId": "1:13209312240:web:eb32214036d2f1f031db35",
-  "apiKey": "AIzaSyAZ80td4JTpJbttzOjjnX1H79R65C5KnYw",
-  "authDomain": "meta-victory-6xctm.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-financeapp-5e894b6c-f414-4cba-974f-fd48216dbfd7",
-  "storageBucket": "meta-victory-6xctm.firebasestorage.app",
-  "messagingSenderId": "13209312240",
-  "measurementId": "",
-  "oAuthClientId": "13209312240-4hfa08fj9bs4v2r277npr9g8e5rtl7jo.apps.googleusercontent.com",
+  "projectId": "finance-app-c5e50",
+  "appId": "1:372093304803:web:74bda49375b1634a1a2ad6",
+  "apiKey": "AIzaSyDdSVErLW6jIyW-cLxGScRPyDHBRclIM1Y",
+  "authDomain": "finance-app-c5e50.firebaseapp.com",
+  "firestoreDatabaseId": "(default)",
+  "storageBucket": "finance-app-c5e50.firebasestorage.app",
+  "messagingSenderId": "372093304803",
+  "measurementId": "G-KY8LMQ21X6",
+  "oAuthClientId": "",
   "recaptchaSiteKey": ""
 }

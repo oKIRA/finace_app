@@ -94,18 +94,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (err: any) {
       console.warn('Google sign-in error:', err);
       if (err?.code === 'auth/popup-closed-by-user') {
-        setErrorMessage('Login com Google cancelado.');
+        setErrorMessage('Login com Google cancelado pelo usuário.');
+      } else if (err?.code === 'auth/popup-blocked') {
+        setErrorMessage('Pop-up bloqueado pelo navegador. Permita pop-ups ou abra em uma nova aba.');
+      } else if (err?.code === 'auth/unauthorized-domain') {
+        setErrorMessage(
+          'Domínio não autorizado no Firebase! Adicione "run.app" em Authentication > Settings > Authorized domains no Firebase Console.'
+        );
       } else if (
         err?.code === 'auth/configuration-not-found' ||
         err?.code === 'auth/operation-not-allowed'
       ) {
         setErrorMessage(
-          'Autenticação com Google não configurada no Firebase. Utilize o "Modo Convidado (Demonstração)" para testar imediatamente.'
+          'Provedor Google não ativado no Firebase Console (Authentication > Sign-in method > Google).'
         );
       } else {
-        setErrorMessage(
-          'Não foi possível autenticar com o Google. Utilize o "Modo Convidado (Demonstração)" para navegar no app.'
-        );
+        const isIframe = typeof window !== 'undefined' && window.self !== window.top;
+        if (isIframe) {
+          setErrorMessage(
+            'O navegador restringiu pop-ups dentro da janela de pré-visualização (COOP). Abra o aplicativo em uma nova aba do navegador ou entre com E-mail/Senha.'
+          );
+        } else {
+          setErrorMessage(
+            err?.message || 'Não foi possível autenticar com o Google. Utilize o "Modo Convidado" para testar o app.'
+          );
+        }
       }
       throw err;
     }

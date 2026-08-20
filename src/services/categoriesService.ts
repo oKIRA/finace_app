@@ -1,6 +1,13 @@
 import { collection, doc, getDocs, setDoc, deleteDoc, updateDoc, writeBatch } from 'firebase/firestore';
 import { db } from '../lib/firebase/config';
 import { Category } from '../types';
+import {
+  getLocalData,
+  setLocalData,
+  saveLocalItem,
+  removeLocalItem,
+  runWithTimeout,
+} from '../lib/storage/syncStorage';
 
 export const DEFAULT_CATEGORIES: Omit<Category, 'id'>[] = [
   // Despesas
@@ -27,41 +34,49 @@ export const DEFAULT_CATEGORIES: Omit<Category, 'id'>[] = [
 export const categoriesService = {
   async getCategories(userId: string): Promise<Category[]> {
     if (!userId) return [];
+    const local = getLocalData<Category>(userId, 'categories');
+    if (local.length > 0) {
+      return local;
+    }
+
     try {
       const colRef = collection(db, 'users', userId, 'categories');
-      const snap = await getDocs(colRef);
+      const snap = await runWithTimeout(getDocs(colRef), 1200);
 
-      if (snap.empty) {
-        // Initialize with default categories
-        return await this.seedDefaultCategories(userId);
+      if (!snap.empty) {
+        const remote = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Category));
+        setLocalData(userId, 'categories', remote);
+        return remote;
       }
-
-      return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Category));
     } catch (err) {
       console.warn('Error fetching categories from Firestore, using local defaults:', err);
-      return DEFAULT_CATEGORIES.map((c, idx) => ({ id: `default_cat_${idx}`, ...c }));
     }
+
+    // Seed defaults in local storage and try background sync
+    return await this.seedDefaultCategories(userId);
   },
 
   async seedDefaultCategories(userId: string): Promise<Category[]> {
-    const colRef = collection(db, 'users', userId, 'categories');
-    const createdList: Category[] = [];
+    const defaultList: Category[] = DEFAULT_CATEGORIES.map((c, idx) => ({
+      id: `cat_default_${idx}`,
+      ...c,
+    }));
+
+    setLocalData(userId, 'categories', defaultList);
 
     try {
+      const colRef = collection(db, 'users', userId, 'categories');
       const batch = writeBatch(db);
-      for (let i = 0; i < DEFAULT_CATEGORIES.length; i++) {
-        const cat = DEFAULT_CATEGORIES[i];
-        const docRef = doc(colRef);
-        const newCat: Category = { id: docRef.id, ...cat };
-        batch.set(docRef, newCat);
-        createdList.push(newCat);
+      for (const cat of defaultList) {
+        const docRef = doc(colRef, cat.id);
+        batch.set(docRef, cat);
       }
-      await batch.commit();
-      return createdList;
+      await runWithTimeout(batch.commit(), 1200);
     } catch (err) {
-      console.warn('Error batch seeding categories:', err);
-      return DEFAULT_CATEGORIES.map((c, idx) => ({ id: `default_cat_${idx}`, ...c }));
+      console.warn('Background batch sync for default categories skipped:', err);
     }
+
+    return defaultList;
   },
 
   async createCategory(userId: string, category: Omit<Category, 'id'>): Promise<Category> {
@@ -70,17 +85,41 @@ export const categoriesService = {
       ...category,
       id: docRef.id,
     };
-    await setDoc(docRef, newCategory);
+
+    saveLocalItem(userId, 'categories', newCategory);
+
+    try {
+      await runWithTimeout(setDoc(docRef, newCategory), 1200);
+    } catch (e) {
+      console.warn('Category saved locally, background Firestore sync pending:', e);
+    }
+
     return newCategory;
   },
 
   async updateCategory(userId: string, id: string, data: Partial<Category>): Promise<void> {
-    const docRef = doc(db, 'users', userId, 'categories', id);
-    await updateDoc(docRef, data);
+    const current = getLocalData<Category>(userId, 'categories');
+    const existing = current.find((c) => c.id === id);
+    if (existing) {
+      saveLocalItem(userId, 'categories', { ...existing, ...data });
+    }
+
+    try {
+      const docRef = doc(db, 'users', userId, 'categories', id);
+      await runWithTimeout(updateDoc(docRef, data), 1200);
+    } catch (e) {
+      console.warn('Category updated locally, background Firestore sync pending:', e);
+    }
   },
 
   async deleteCategory(userId: string, id: string): Promise<void> {
-    const docRef = doc(db, 'users', userId, 'categories', id);
-    await deleteDoc(docRef);
+    removeLocalItem(userId, 'categories', id);
+
+    try {
+      const docRef = doc(db, 'users', userId, 'categories', id);
+      await runWithTimeout(deleteDoc(docRef), 1200);
+    } catch (e) {
+      console.warn('Category deleted locally, background Firestore sync pending:', e);
+    }
   },
 };

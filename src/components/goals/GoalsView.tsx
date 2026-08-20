@@ -353,10 +353,10 @@ export const GoalsView: React.FC = () => {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold shadow-xs flex items-center gap-1.5"
+                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white rounded-xl font-bold shadow-xs flex items-center gap-1.5 cursor-pointer disabled:cursor-not-allowed"
                 >
-                  <Check className="w-4 h-4" />
-                  Salvar Meta
+                  <Check className={`w-4 h-4 ${submitting ? 'animate-spin' : ''}`} />
+                  {submitting ? 'Salvando...' : selectedGoal ? 'Salvar Alterações' : 'Salvar Meta'}
                 </button>
               </div>
             </form>
@@ -418,10 +418,10 @@ export const GoalsView: React.FC = () => {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold shadow-xs flex items-center gap-1.5"
+                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white rounded-xl font-bold shadow-xs flex items-center gap-1.5 cursor-pointer disabled:cursor-not-allowed"
                 >
-                  <Check className="w-4 h-4" />
-                  Confirmar Aporte
+                  <Check className={`w-4 h-4 ${submitting ? 'animate-spin' : ''}`} />
+                  {submitting ? 'Confirmando...' : 'Confirmar Aporte'}
                 </button>
               </div>
             </form>

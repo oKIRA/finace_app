@@ -22,5 +22,5 @@ googleProvider.setCustomParameters({ prompt: 'select_account' });
 
 const databaseId = env.VITE_FIREBASE_FIRESTORE_DATABASE_ID || firebaseConfigJson.firestoreDatabaseId || '(default)';
 
-export const db = initializeFirestore(app, {}, databaseId);
+export const db = getFirestore(app, databaseId);
 export default app;

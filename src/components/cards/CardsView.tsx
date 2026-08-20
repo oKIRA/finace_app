@@ -425,10 +425,10 @@ export const CardsView: React.FC<{ onNavigateToInvoices: () => void }> = ({ onNa
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold shadow-xs flex items-center gap-1.5"
+                  className="px-5 py-2.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white rounded-xl font-bold shadow-xs flex items-center gap-1.5 cursor-pointer disabled:cursor-not-allowed"
                 >
-                  <Check className="w-4 h-4" />
-                  Salvar Cartão
+                  <Check className={`w-4 h-4 ${submitting ? 'animate-spin' : ''}`} />
+                  {submitting ? 'Salvando...' : editingCard ? 'Salvar Alterações' : 'Salvar Cartão'}
                 </button>
               </div>
             </form>

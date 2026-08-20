@@ -3,13 +3,33 @@ import { db } from '../lib/firebase/config';
 import { Invoice, InvoiceStatus, CreditCard } from '../types';
 import { transactionsService } from './transactionsService';
 import { getInvoiceDueDate } from '../lib/utils/dates';
+import {
+  getLocalData,
+  setLocalData,
+  saveLocalItem,
+  runWithTimeout,
+} from '../lib/storage/syncStorage';
 
 export const invoicesService = {
   async getInvoices(userId: string, cardId?: string): Promise<Invoice[]> {
     if (!userId) return [];
-    const colRef = collection(db, 'users', userId, 'invoices');
-    const snap = await getDocs(colRef);
-    let list = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Invoice));
+    const local = getLocalData<Invoice>(userId, 'invoices');
+
+    try {
+      const colRef = collection(db, 'users', userId, 'invoices');
+      const snap = await runWithTimeout(getDocs(colRef), 1200);
+      const remote = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Invoice));
+      if (remote.length > 0) {
+        setLocalData(userId, 'invoices', remote);
+        let list = remote;
+        if (cardId) list = list.filter((i) => i.cardId === cardId);
+        return list;
+      }
+    } catch (e) {
+      console.warn('Invoices loaded from local cache:', e);
+    }
+
+    let list = local;
     if (cardId) {
       list = list.filter((i) => i.cardId === cardId);
     }
@@ -31,7 +51,7 @@ export const invoicesService = {
     const { cardId, cardName, year, month, amountToPay, payingAccountId, paymentDate } = invoiceData;
     const invoiceId = `${cardId}_${year}_${month}`;
 
-    // 1. Create a card_payment transaction (reduces payingAccountId balance, does NOT count as second expense)
+    // 1. Create a card_payment transaction (reduces payingAccountId balance)
     const paymentTransaction = await transactionsService.createTransaction(userId, {
       type: 'card_payment',
       amount: amountToPay,
@@ -44,23 +64,50 @@ export const invoicesService = {
       notes: `Liquidação de fatura do cartão`,
     });
 
-    // 2. Update/create the invoice record in Firestore
-    const docRef = doc(db, 'users', userId, 'invoices', invoiceId);
-    await setDoc(
-      docRef,
-      {
+    // 2. Update local invoice
+    const currentInvoices = getLocalData<Invoice>(userId, 'invoices');
+    const existing = currentInvoices.find((i) => i.id === invoiceId);
+    const updatedInvoice: Invoice = {
+      ...(existing || {
         id: invoiceId,
         cardId,
         year,
         month,
         amount: amountToPay,
-        paidAmount: amountToPay,
-        status: 'paid' as InvoiceStatus,
-        paidAt: new Date().toISOString(),
-        paymentTransactionId: paymentTransaction.id,
-      },
-      { merge: true }
-    );
+        closingDate: '',
+        dueDate: '',
+      }),
+      paidAmount: amountToPay,
+      status: 'paid' as InvoiceStatus,
+      paidAt: new Date().toISOString(),
+      paymentTransactionId: paymentTransaction.id,
+    };
+    saveLocalItem(userId, 'invoices', updatedInvoice);
+
+    // 3. Sync to Firestore in background
+    try {
+      const docRef = doc(db, 'users', userId, 'invoices', invoiceId);
+      await runWithTimeout(
+        setDoc(
+          docRef,
+          {
+            id: invoiceId,
+            cardId,
+            year,
+            month,
+            amount: amountToPay,
+            paidAmount: amountToPay,
+            status: 'paid' as InvoiceStatus,
+            paidAt: new Date().toISOString(),
+            paymentTransactionId: paymentTransaction.id,
+          },
+          { merge: true }
+        ),
+        1200
+      );
+    } catch (e) {
+      console.warn('Invoice payment saved locally, Firestore sync pending:', e);
+    }
   },
 
   calculateInvoiceStatus(
@@ -76,9 +123,6 @@ export const invoicesService = {
     if (today > dueDate && invoiceAmount > 0) {
       return 'overdue';
     }
-    if (invoiceAmount > 0) {
-      return 'open';
-    }
     return 'open';
   },
 
@@ -93,28 +137,48 @@ export const invoicesService = {
     const dueDate = getInvoiceDueDate(year, month, card.dueDay);
     const closingDate = getInvoiceDueDate(year, month, card.closingDay);
 
+    const localInvoices = getLocalData<Invoice>(userId, 'invoices');
+    const localExisting = localInvoices.find((i) => i.id === invoiceId);
+
+    if (localExisting) {
+      const status = this.calculateInvoiceStatus(
+        calculatedCardExpenses,
+        localExisting.paidAmount || 0,
+        dueDate,
+        localExisting.status === 'paid'
+      );
+      return {
+        ...localExisting,
+        amount: calculatedCardExpenses,
+        status,
+        dueDate,
+        closingDate,
+      };
+    }
+
     try {
       const docRef = doc(db, 'users', userId, 'invoices', invoiceId);
-      const snap = await getDoc(docRef);
-      const existing = snap.exists() ? (snap.data() as Invoice) : undefined;
-
-      if (existing) {
+      const snap = await runWithTimeout(getDoc(docRef), 1000);
+      if (snap.exists()) {
+        const remoteData = snap.data() as Invoice;
         const status = this.calculateInvoiceStatus(
           calculatedCardExpenses,
-          existing.paidAmount || 0,
+          remoteData.paidAmount || 0,
           dueDate,
-          existing.status === 'paid'
+          remoteData.status === 'paid'
         );
-        return {
-          ...existing,
+        const inv: Invoice = {
+          ...remoteData,
           amount: calculatedCardExpenses,
           status,
           dueDate,
           closingDate,
         };
+        saveLocalItem(userId, 'invoices', inv);
+        return inv;
       }
     } catch (e) {
-      console.warn('Error reading invoice record, generating in-memory invoice:', e);
+      // Ignore background timeout and proceed with constructed invoice
     }
 
     const newInvoice: Invoice = {

@@ -11,10 +11,12 @@ import {
   Mail,
   User,
   CheckCircle2,
+  ExternalLink,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export const LoginPage: React.FC = () => {
+  const isIframe = typeof window !== 'undefined' && window.self !== window.top;
   const {
     signInWithGoogle,
     signInWithEmail,
@@ -47,14 +49,16 @@ export const LoginPage: React.FC = () => {
       }
     } catch (err: any) {
       console.error(err);
-      if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
+      if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
         setErrorMsg('Email ou senha incorretos.');
       } else if (err.code === 'auth/email-already-in-use') {
         setErrorMsg('Este email já está em uso.');
       } else if (err.code === 'auth/weak-password') {
         setErrorMsg('A senha deve conter no mínimo 6 caracteres.');
+      } else if (err.code === 'auth/configuration-not-found' || err.code === 'auth/operation-not-allowed') {
+        setErrorMsg('No Firebase Console do seu projeto, ative "Email/Password" em Authentication > Sign-in method.');
       } else {
-        setErrorMsg('Erro ao autenticar. Tente novamente.');
+        setErrorMsg(err.message || 'Erro ao autenticar. Tente novamente.');
       }
     } finally {
       setLoading(false);
@@ -155,6 +159,20 @@ export const LoginPage: React.FC = () => {
             </svg>
             Entrar com Conta Google
           </button>
+
+          {isIframe && (
+            <div className="mt-2 text-center">
+              <a
+                href={window.location.href}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 text-[11px] text-emerald-400 hover:text-emerald-300 font-medium transition-colors"
+              >
+                <span>Abrir app em nova aba para login Google</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+          )}
 
           <div className="my-5 flex items-center gap-3">
             <div className="flex-1 h-px bg-slate-800" />
