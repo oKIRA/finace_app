@@ -17,7 +17,7 @@ export const ExpenseCategoryChart: React.FC = () => {
 
   if (data.length === 0) {
     return (
-      <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs flex flex-col items-center justify-center min-h-[320px] text-center">
+      <div className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-2xs flex flex-col items-center justify-center min-h-[300px] text-center">
         <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
           <PieIcon className="w-6 h-6" />
         </div>
@@ -34,12 +34,12 @@ export const ExpenseCategoryChart: React.FC = () => {
       const item = payload[0].payload;
       return (
         <div className="bg-slate-900 text-white p-2.5 rounded-xl text-xs shadow-xl border border-slate-800">
-          <p className="font-bold flex items-center gap-1.5">
+          <p className="font-bold flex items-center gap-1.5 truncate">
             <span
-              className="w-2.5 h-2.5 rounded-full inline-block"
+              className="w-2.5 h-2.5 rounded-full inline-block shrink-0"
               style={{ backgroundColor: item.color }}
             />
-            {item.name}
+            <span className="truncate">{item.name}</span>
           </p>
           <p className="text-slate-300 mt-1">
             {formatCurrency(item.rawAmount)} ({formatPercent(item.percentage)})
@@ -51,18 +51,20 @@ export const ExpenseCategoryChart: React.FC = () => {
   };
 
   return (
-    <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs flex flex-col justify-between">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h3 className="text-sm font-bold text-slate-800 tracking-tight">Gastos por Categoria</h3>
-          <p className="text-xs text-slate-400">Distribuição percentual de saídas</p>
+    <div className="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200 shadow-2xs flex flex-col justify-between h-full">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+        <div className="min-w-0">
+          <h3 className="text-sm sm:text-base font-bold text-slate-800 tracking-tight truncate">
+            Gastos por Categoria
+          </h3>
+          <p className="text-xs text-slate-400 truncate">Distribuição percentual de saídas</p>
         </div>
-        <span className="text-xs font-bold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg">
+        <span className="text-xs font-bold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg shrink-0 self-start sm:self-auto">
           Total: {formatCurrency(summary.monthExpense)}
         </span>
       </div>
 
-      <div className="h-52 w-full my-auto">
+      <div className="h-48 sm:h-52 w-full my-auto">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Tooltip content={<CustomTooltip />} />
@@ -72,8 +74,8 @@ export const ExpenseCategoryChart: React.FC = () => {
               nameKey="name"
               cx="50%"
               cy="50%"
-              innerRadius={52}
-              outerRadius={80}
+              innerRadius={46}
+              outerRadius={74}
               paddingAngle={3}
             >
               {data.map((entry, index) => (
@@ -84,18 +86,21 @@ export const ExpenseCategoryChart: React.FC = () => {
         </ResponsiveContainer>
       </div>
 
-      {/* Category Breakdown Table / Chips */}
-      <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-slate-100 max-h-36 overflow-y-auto custom-scrollbar">
+      {/* Category Breakdown Chips */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4 pt-4 border-t border-slate-100 max-h-36 overflow-y-auto custom-scrollbar">
         {categoryExpenses.slice(0, 6).map((c) => (
-          <div key={c.categoryId} className="flex items-center justify-between text-xs p-1.5 rounded-lg bg-slate-50">
-            <div className="flex items-center gap-2 min-w-0">
+          <div
+            key={c.categoryId}
+            className="flex items-center justify-between text-xs p-2 rounded-xl bg-slate-50 min-w-0"
+          >
+            <div className="flex items-center gap-2 min-w-0 flex-1">
               <span
                 className="w-2.5 h-2.5 rounded-full shrink-0"
                 style={{ backgroundColor: c.categoryColor }}
               />
               <span className="text-slate-700 font-medium truncate">{c.categoryName}</span>
             </div>
-            <span className="font-bold text-slate-900 shrink-0 ml-1">
+            <span className="font-bold text-slate-900 shrink-0 ml-2">
               {c.percentage.toFixed(0)}%
             </span>
           </div>

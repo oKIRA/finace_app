@@ -256,11 +256,11 @@ export const TransactionModal: React.FC = () => {
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-150">
+      <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh]">
         {/* Modal Header & Tabs */}
-        <div className="bg-slate-900 text-white p-5 pb-0">
-          <div className="flex items-center justify-between mb-4">
+        <div className="bg-slate-900 text-white p-4 sm:p-5 pb-0">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
             <h3 className="text-base font-bold tracking-tight">Novo Lançamento</h3>
             <button
               onClick={closeTransactionModal}
@@ -272,7 +272,7 @@ export const TransactionModal: React.FC = () => {
           </div>
 
           {/* 4 Tabs */}
-          <div className="grid grid-cols-4 gap-1 p-1 bg-slate-950/60 rounded-xl mb-4 text-xs font-semibold">
+          <div className="grid grid-cols-4 gap-1 p-1 bg-slate-950/60 rounded-xl mb-3 sm:mb-4 text-[11px] sm:text-xs font-semibold">
             <button
               type="button"
               onClick={() => {
@@ -280,14 +280,14 @@ export const TransactionModal: React.FC = () => {
                 setErrorMessage(null);
               }}
               id="tab-expense"
-              className={`py-2 px-1 rounded-lg flex flex-col sm:flex-row items-center justify-center gap-1.5 transition-all ${
+              className={`py-2 px-1 rounded-lg flex flex-col sm:flex-row items-center justify-center gap-1 transition-all ${
                 activeTab === 'expense'
                   ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              <ArrowDownRight className="w-3.5 h-3.5 text-rose-400" />
-              <span>Despesa</span>
+              <ArrowDownRight className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+              <span className="truncate">Despesa</span>
             </button>
 
             <button
@@ -297,14 +297,14 @@ export const TransactionModal: React.FC = () => {
                 setErrorMessage(null);
               }}
               id="tab-income"
-              className={`py-2 px-1 rounded-lg flex flex-col sm:flex-row items-center justify-center gap-1.5 transition-all ${
+              className={`py-2 px-1 rounded-lg flex flex-col sm:flex-row items-center justify-center gap-1 transition-all ${
                 activeTab === 'income'
                   ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              <ArrowUpRight className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Receita</span>
+              <ArrowUpRight className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <span className="truncate">Receita</span>
             </button>
 
             <button
@@ -314,14 +314,14 @@ export const TransactionModal: React.FC = () => {
                 setErrorMessage(null);
               }}
               id="tab-card"
-              className={`py-2 px-1 rounded-lg flex flex-col sm:flex-row items-center justify-center gap-1.5 transition-all ${
+              className={`py-2 px-1 rounded-lg flex flex-col sm:flex-row items-center justify-center gap-1 transition-all ${
                 activeTab === 'card'
                   ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              <CardIcon className="w-3.5 h-3.5 text-purple-400" />
-              <span>Cartão</span>
+              <CardIcon className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+              <span className="truncate">Cartão</span>
             </button>
 
             <button
@@ -331,20 +331,20 @@ export const TransactionModal: React.FC = () => {
                 setErrorMessage(null);
               }}
               id="tab-transfer"
-              className={`py-2 px-1 rounded-lg flex flex-col sm:flex-row items-center justify-center gap-1.5 transition-all ${
+              className={`py-2 px-1 rounded-lg flex flex-col sm:flex-row items-center justify-center gap-1 transition-all ${
                 activeTab === 'transfer'
                   ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              <ArrowLeftRight className="w-3.5 h-3.5 text-blue-400" />
-              <span>Transf.</span>
+              <ArrowLeftRight className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+              <span className="truncate">Transf.</span>
             </button>
           </div>
         </div>
 
         {/* Modal Form */}
-        <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-4 text-slate-700 text-sm">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 overflow-y-auto space-y-3.5 sm:space-y-4 text-slate-700 text-sm custom-scrollbar">
           {errorMessage && (
             <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium">
               {errorMessage}

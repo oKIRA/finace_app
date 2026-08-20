@@ -7,7 +7,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
 } from 'recharts';
 import { useFinanceData } from '../../context/FinanceDataContext';
 import { useDateFilter } from '../../context/DateFilterContext';
@@ -57,7 +56,7 @@ export const IncomeVsExpenseChart: React.FC = () => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
-        <div className="bg-slate-900 text-white p-3 rounded-xl text-xs shadow-xl border border-slate-800 space-y-1">
+        <div className="bg-slate-900 text-white p-2.5 sm:p-3 rounded-xl text-xs shadow-xl border border-slate-800 space-y-1">
           <p className="font-bold text-slate-200">{label}</p>
           <p className="text-emerald-400 font-semibold">
             Entradas: {formatCurrency(data.rawIncome)}
@@ -82,13 +81,15 @@ export const IncomeVsExpenseChart: React.FC = () => {
   };
 
   return (
-    <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs flex flex-col justify-between">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h3 className="text-sm font-bold text-slate-800 tracking-tight">Entradas vs Despesas</h3>
-          <p className="text-xs text-slate-400">Histórico dos últimos 6 meses</p>
+    <div className="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200 shadow-2xs flex flex-col justify-between h-full">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+        <div className="min-w-0">
+          <h3 className="text-sm sm:text-base font-bold text-slate-800 tracking-tight truncate">
+            Entradas vs Despesas
+          </h3>
+          <p className="text-xs text-slate-400 truncate">Histórico dos últimos 6 meses</p>
         </div>
-        <div className="flex items-center gap-3 text-xs font-semibold">
+        <div className="flex items-center gap-3 text-xs font-semibold shrink-0">
           <span className="flex items-center gap-1.5 text-emerald-600">
             <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500 inline-block" />
             Entradas
@@ -100,15 +101,15 @@ export const IncomeVsExpenseChart: React.FC = () => {
         </div>
       </div>
 
-      <div className="h-64 w-full">
+      <div className="h-56 sm:h-64 w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={chartData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
+          <BarChart data={chartData} margin={{ top: 10, right: 5, left: -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
             <XAxis
               dataKey="monthLabel"
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: 11, fill: '#64748B' }}
+              tick={{ fontSize: 10, fill: '#64748B' }}
             />
             <YAxis
               axisLine={false}
@@ -117,8 +118,8 @@ export const IncomeVsExpenseChart: React.FC = () => {
               tickFormatter={(v) => `R$${v}`}
             />
             <Tooltip content={<CustomTooltip />} />
-            <Bar dataKey="receitas" fill="#10B981" radius={[4, 4, 0, 0]} maxBarSize={28} />
-            <Bar dataKey="despesas" fill="#F43F5E" radius={[4, 4, 0, 0]} maxBarSize={28} />
+            <Bar dataKey="receitas" fill="#10B981" radius={[4, 4, 0, 0]} maxBarSize={24} />
+            <Bar dataKey="despesas" fill="#F43F5E" radius={[4, 4, 0, 0]} maxBarSize={24} />
           </BarChart>
         </ResponsiveContainer>
       </div>

@@ -2,13 +2,9 @@ import React from 'react';
 import {
   LayoutDashboard,
   ArrowLeftRight,
-  Landmark,
   CreditCard,
-  Receipt,
-  PieChart,
-  Target,
   FileBarChart2,
-  Settings,
+  Menu,
 } from 'lucide-react';
 import { NavItemKey } from './Sidebar';
 
@@ -17,6 +13,7 @@ interface MobileNavProps {
   activeTab?: NavItemKey;
   onSelectTab?: (tab: NavItemKey) => void;
   setActiveTab?: (tab: NavItemKey) => void;
+  onOpenMoreMenu?: () => void;
 }
 
 export const MobileNav: React.FC<MobileNavProps> = ({
@@ -24,6 +21,7 @@ export const MobileNav: React.FC<MobileNavProps> = ({
   activeTab,
   onSelectTab,
   setActiveTab,
+  onOpenMoreMenu,
 }) => {
   const selectedTab = currentTab || activeTab || 'dashboard';
 
@@ -32,16 +30,19 @@ export const MobileNav: React.FC<MobileNavProps> = ({
     if (setActiveTab) setActiveTab(key);
   };
 
-  const primaryItems: Array<{ key: NavItemKey; label: string; icon: React.ComponentType<{ className?: string }> }> = [
+  const primaryItems: Array<{
+    key: NavItemKey;
+    label: string;
+    icon: React.ComponentType<{ className?: string }>;
+  }> = [
     { key: 'dashboard', label: 'Início', icon: LayoutDashboard },
     { key: 'transactions', label: 'Extrato', icon: ArrowLeftRight },
     { key: 'cards', label: 'Cartões', icon: CreditCard },
     { key: 'reports', label: 'Relatórios', icon: FileBarChart2 },
-    { key: 'settings', label: 'Ajustes', icon: Settings },
   ];
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 px-2 py-2 flex items-center justify-around z-30 shadow-lg">
+    <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 px-2 py-1.5 flex items-center justify-around z-40 shadow-2xl safe-area-pb">
       {primaryItems.map((item) => {
         const Icon = item.icon;
         const isActive = selectedTab === item.key;
@@ -50,15 +51,27 @@ export const MobileNav: React.FC<MobileNavProps> = ({
             key={item.key}
             onClick={() => handleTabClick(item.key)}
             id={`mobile-nav-${item.key}`}
-            className={`flex flex-col items-center gap-1 py-1 px-2.5 rounded-lg transition-all ${
-              isActive ? 'text-emerald-400 font-semibold' : 'text-slate-400 hover:text-slate-200'
+            className={`flex flex-col items-center justify-center gap-0.5 py-1 px-3 rounded-xl transition-all ${
+              isActive
+                ? 'text-emerald-400 font-bold bg-emerald-950/40'
+                : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <Icon className="w-5 h-5" />
-            <span className="text-[10px] tracking-tight">{item.label}</span>
+            <Icon className={`w-5 h-5 ${isActive ? 'scale-105' : ''}`} />
+            <span className="text-[10px] tracking-tight whitespace-nowrap">{item.label}</span>
           </button>
         );
       })}
+
+      {/* "Mais" Button to trigger drawer with full options (Accounts, Budgets, Goals, Invoices, Recurring, Settings) */}
+      <button
+        onClick={onOpenMoreMenu}
+        id="mobile-nav-more"
+        className="flex flex-col items-center justify-center gap-0.5 py-1 px-3 rounded-xl text-slate-400 hover:text-slate-200 transition-all active:scale-95"
+      >
+        <Menu className="w-5 h-5" />
+        <span className="text-[10px] tracking-tight whitespace-nowrap">Mais</span>
+      </button>
     </div>
   );
 };

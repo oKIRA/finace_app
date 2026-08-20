@@ -5,20 +5,22 @@ import {
   Trash2,
   Edit2,
   Calendar,
-  Layers,
-  CheckCircle,
+  AlertCircle,
+  TrendingUp,
   X,
   Check,
 } from 'lucide-react';
 import { useFinanceData } from '../../context/FinanceDataContext';
 import { useAuth } from '../../context/AuthContext';
 import { cardsService } from '../../services/cardsService';
-import { formatCurrency, formatPercent } from '../../lib/utils/formatters';
-import { CreditCard, CardBrand, Invoice } from '../../types';
+import { formatCurrency } from '../../lib/utils/formatters';
+import { CreditCard, Invoice } from '../../types';
 
-export const CardsView: React.FC<{ onNavigateToInvoices: () => void }> = ({ onNavigateToInvoices }) => {
+export const CardsView: React.FC<{ onNavigateToInvoices: () => void }> = ({
+  onNavigateToInvoices,
+}) => {
   const { user } = useAuth();
-  const { cards, invoices, summary, refreshData, openTransactionModal } = useFinanceData();
+  const { cards, invoices, summary, openTransactionModal, refreshData } = useFinanceData();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCard, setEditingCard] = useState<CreditCard | null>(null);
@@ -26,10 +28,10 @@ export const CardsView: React.FC<{ onNavigateToInvoices: () => void }> = ({ onNa
   // Form states
   const [name, setName] = useState('');
   const [bank, setBank] = useState('');
-  const [brand, setBrand] = useState<CardBrand>('mastercard');
+  const [brand, setBrand] = useState('Mastercard');
   const [limitStr, setLimitStr] = useState('');
-  const [closingDay, setClosingDay] = useState(2);
-  const [dueDay, setDueDay] = useState(9);
+  const [closingDay, setClosingDay] = useState(1);
+  const [dueDay, setDueDay] = useState(10);
   const [color, setColor] = useState('#8A05BE');
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -38,24 +40,24 @@ export const CardsView: React.FC<{ onNavigateToInvoices: () => void }> = ({ onNa
     setEditingCard(null);
     setName('');
     setBank('');
-    setBrand('mastercard');
+    setBrand('Mastercard');
     setLimitStr('');
-    setClosingDay(2);
-    setDueDay(9);
+    setClosingDay(1);
+    setDueDay(10);
     setColor('#8A05BE');
     setErrorMsg(null);
     setIsModalOpen(true);
   };
 
-  const openEditModal = (c: CreditCard) => {
-    setEditingCard(c);
-    setName(c.name);
-    setBank(c.bank);
-    setBrand(c.brand);
-    setLimitStr(((c.limit || 0) / 100).toFixed(2));
-    setClosingDay(c.closingDay);
-    setDueDay(c.dueDay);
-    setColor(c.color || '#8A05BE');
+  const openEditModal = (card: CreditCard) => {
+    setEditingCard(card);
+    setName(card.name);
+    setBank(card.bank);
+    setBrand(card.brand || 'Mastercard');
+    setLimitStr(((card.limit || 0) / 100).toFixed(2));
+    setClosingDay(card.closingDay);
+    setDueDay(card.dueDay);
+    setColor(card.color || '#8A05BE');
     setErrorMsg(null);
     setIsModalOpen(true);
   };
@@ -65,7 +67,7 @@ export const CardsView: React.FC<{ onNavigateToInvoices: () => void }> = ({ onNa
     if (!user) return;
 
     if (!name.trim()) {
-      setErrorMsg('Informe o nome do cartão.');
+      setErrorMsg('Informe o nome ou apelido do cartão.');
       return;
     }
 
@@ -78,7 +80,7 @@ export const CardsView: React.FC<{ onNavigateToInvoices: () => void }> = ({ onNa
     const limitFloat = parseFloat(cleaned) || 0;
 
     if (limitFloat <= 0) {
-      setErrorMsg('Informe um limite válido maior que zero.');
+      setErrorMsg('Informe um limite de crédito válido maior que zero.');
       return;
     }
 
@@ -93,18 +95,18 @@ export const CardsView: React.FC<{ onNavigateToInvoices: () => void }> = ({ onNa
           bank: bank.trim(),
           brand,
           limit: limitCents,
-          closingDay,
-          dueDay,
+          closingDay: Number(closingDay),
+          dueDay: Number(dueDay),
           color,
         });
       } else {
         await cardsService.createCard(user.uid, {
           name: name.trim(),
-          bank: bank.trim() || name.trim(),
+          bank: bank.trim() || 'Banco',
           brand,
           limit: limitCents,
-          closingDay,
-          dueDay,
+          closingDay: Number(closingDay),
+          dueDay: Number(dueDay),
           color,
         });
       }
@@ -119,11 +121,11 @@ export const CardsView: React.FC<{ onNavigateToInvoices: () => void }> = ({ onNa
     }
   };
 
-  const handleDelete = async (c: CreditCard) => {
+  const handleDelete = async (card: CreditCard) => {
     if (!user) return;
-    if (window.confirm(`Deseja realmente excluir o cartão "${c.name}"?`)) {
+    if (window.confirm(`Deseja realmente excluir o cartão "${card.name}"?`)) {
       try {
-        await cardsService.deleteCard(user.uid, c.id);
+        await cardsService.deleteCard(user.uid, card.id);
         await refreshData();
       } catch (err) {
         console.error(err);
@@ -132,29 +134,29 @@ export const CardsView: React.FC<{ onNavigateToInvoices: () => void }> = ({ onNa
     }
   };
 
-  const invoiceMap = new Map<string, Invoice>(invoices.map((i) => [i.cardId, i]));
+  const invoiceMap = new Map<string, Invoice>(invoices.map((inv) => [inv.cardId, inv]));
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-150">
-      {/* Top Bar */}
-      <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
+    <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-150">
+      {/* Top Header Card */}
+      <div className="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="min-w-0">
           <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
             Gestão de Cartões de Crédito
           </span>
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight mt-0.5">
+          <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-0.5 truncate">
             {cards.length} Cartões Cadastrados
           </h2>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-slate-500 mt-1 truncate">
             Faturas somam {formatCurrency(summary.monthInvoicesTotal)} no mês ativo
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
           <button
             onClick={onNavigateToInvoices}
             id="btn-nav-to-invoices"
-            className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200/80 text-slate-800 rounded-xl text-xs font-bold transition-all"
+            className="px-3 sm:px-4 py-2 bg-slate-100 hover:bg-slate-200/80 text-slate-800 rounded-xl text-xs font-bold transition-all"
           >
             Ver Faturas Detalhadas
           </button>
@@ -162,7 +164,7 @@ export const CardsView: React.FC<{ onNavigateToInvoices: () => void }> = ({ onNa
           <button
             onClick={openCreateModal}
             id="btn-add-card"
-            className="px-4 py-2.5 bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all"
+            className="px-3.5 sm:px-4 py-2 bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition-all"
           >
             <Plus className="w-4 h-4" /> Novo Cartão
           </button>
@@ -170,7 +172,7 @@ export const CardsView: React.FC<{ onNavigateToInvoices: () => void }> = ({ onNa
       </div>
 
       {/* Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {cards.map((card) => {
           const inv = invoiceMap.get(card.id);
           const usedAmount = inv ? inv.amount : 0;
@@ -180,7 +182,7 @@ export const CardsView: React.FC<{ onNavigateToInvoices: () => void }> = ({ onNa
           return (
             <div
               key={card.id}
-              className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs hover:shadow-lg transition-all flex flex-col justify-between relative overflow-hidden"
+              className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 md:p-6 border border-slate-200 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between relative overflow-hidden min-w-0"
             >
               {/* Top Card Gradient Bar */}
               <div
@@ -188,24 +190,24 @@ export const CardsView: React.FC<{ onNavigateToInvoices: () => void }> = ({ onNa
                 style={{ backgroundColor: card.color || '#8A05BE' }}
               />
 
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
+              <div className="min-w-0">
+                <div className="flex items-center justify-between mb-4 gap-2">
+                  <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
                     <div
-                      className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-xs"
+                      className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-2xs shrink-0"
                       style={{ backgroundColor: card.color || '#8A05BE' }}
                     >
                       <CardIcon className="w-5 h-5" />
                     </div>
-                    <div>
-                      <h3 className="font-bold text-slate-900 text-base">{card.name}</h3>
-                      <p className="text-xs text-slate-400 font-medium capitalize">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-bold text-slate-900 text-sm sm:text-base truncate">{card.name}</h3>
+                      <p className="text-xs text-slate-400 font-medium capitalize truncate">
                         {card.bank} • {card.brand}
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 shrink-0">
                     <button
                       onClick={() => openEditModal(card)}
                       id={`btn-edit-card-${card.id}`}
@@ -226,12 +228,14 @@ export const CardsView: React.FC<{ onNavigateToInvoices: () => void }> = ({ onNa
                 </div>
 
                 {/* Progress Bar of used limit */}
-                <div className="space-y-1.5 my-4">
+                <div className="space-y-1.5 my-3 sm:my-4">
                   <div className="flex items-center justify-between text-xs font-bold">
-                    <span className="text-slate-500">Utilizado na Fatura</span>
-                    <span className="text-purple-600 font-black">{formatCurrency(usedAmount)}</span>
+                    <span className="text-slate-500">Fatura Atual</span>
+                    <span className="text-purple-600 font-black truncate ml-2">
+                      {formatCurrency(usedAmount)}
+                    </span>
                   </div>
-                  <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all duration-300 ${
                         usedPercent > 80 ? 'bg-rose-500' : 'bg-purple-600'
@@ -240,32 +244,32 @@ export const CardsView: React.FC<{ onNavigateToInvoices: () => void }> = ({ onNa
                     />
                   </div>
                   <div className="flex items-center justify-between text-[11px] text-slate-400 font-semibold">
-                    <span>Disponível: {formatCurrency(availableAmount)}</span>
-                    <span>{usedPercent.toFixed(0)}% do limite</span>
+                    <span className="truncate">Disp: {formatCurrency(availableAmount)}</span>
+                    <span className="shrink-0 ml-2">{usedPercent.toFixed(0)}%</span>
                   </div>
                 </div>
 
                 {/* Card Meta Infos */}
-                <div className="grid grid-cols-3 gap-2 pt-3 border-t border-slate-100 text-center">
-                  <div className="p-2 bg-slate-50 rounded-xl">
-                    <span className="block text-[10px] uppercase font-bold text-slate-400">Limite</span>
-                    <span className="text-xs font-extrabold text-slate-800">
+                <div className="grid grid-cols-3 gap-1.5 sm:gap-2 pt-3 border-t border-slate-100 text-center">
+                  <div className="p-1.5 sm:p-2 bg-slate-50 rounded-xl min-w-0">
+                    <span className="block text-[9px] sm:text-[10px] uppercase font-bold text-slate-400">Limite</span>
+                    <span className="text-[11px] sm:text-xs font-black text-slate-800 truncate block" title={formatCurrency(card.limit)}>
                       {formatCurrency(card.limit)}
                     </span>
                   </div>
-                  <div className="p-2 bg-slate-50 rounded-xl">
-                    <span className="block text-[10px] uppercase font-bold text-slate-400">Fecha</span>
-                    <span className="text-xs font-extrabold text-slate-800">Dia {card.closingDay}</span>
+                  <div className="p-1.5 sm:p-2 bg-slate-50 rounded-xl min-w-0">
+                    <span className="block text-[9px] sm:text-[10px] uppercase font-bold text-slate-400">Fecha</span>
+                    <span className="text-[11px] sm:text-xs font-black text-slate-800 truncate block">Dia {card.closingDay}</span>
                   </div>
-                  <div className="p-2 bg-slate-50 rounded-xl">
-                    <span className="block text-[10px] uppercase font-bold text-slate-400">Vence</span>
-                    <span className="text-xs font-extrabold text-slate-800">Dia {card.dueDay}</span>
+                  <div className="p-1.5 sm:p-2 bg-slate-50 rounded-xl min-w-0">
+                    <span className="block text-[9px] sm:text-[10px] uppercase font-bold text-slate-400">Vence</span>
+                    <span className="text-[11px] sm:text-xs font-black text-slate-800 truncate block">Dia {card.dueDay}</span>
                   </div>
                 </div>
               </div>
 
               {/* Action Button */}
-              <div className="mt-4 pt-3 flex items-center justify-between gap-2">
+              <div className="mt-3 sm:mt-4 pt-2 flex items-center justify-between gap-2">
                 <button
                   onClick={() => openTransactionModal('card')}
                   id={`btn-card-purchase-${card.id}`}
@@ -279,94 +283,94 @@ export const CardsView: React.FC<{ onNavigateToInvoices: () => void }> = ({ onNa
         })}
       </div>
 
-      {/* Card Modal */}
+      {/* Modal for Creating / Editing Card */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
-            <div className="bg-slate-900 text-white p-5 flex items-center justify-between">
-              <h3 className="text-sm font-bold tracking-tight">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white rounded-3xl p-5 sm:p-6 w-full max-w-md shadow-2xl border border-slate-200 relative animate-in zoom-in-95 max-h-[92vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+              <h3 className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
+                <CardIcon className="w-5 h-5 text-purple-600" />
                 {editingCard ? 'Editar Cartão' : 'Novo Cartão de Crédito'}
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-slate-400 hover:text-white p-1 rounded-lg"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-4 text-xs font-medium text-slate-700">
-              {errorMsg && (
-                <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-xs">
-                  {errorMsg}
-                </div>
-              )}
+            {errorMsg && (
+              <div className="mb-4 p-3 bg-rose-50 text-rose-700 border border-rose-200 rounded-xl text-xs font-medium">
+                {errorMsg}
+              </div>
+            )}
 
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block font-bold text-slate-500 uppercase tracking-wider mb-1">
-                  Nome do Cartão
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                  Nome / Identificador
                 </label>
                 <input
                   type="text"
+                  required
+                  placeholder="Ex: Nubank Roxinho, Itaú Black"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Ex: Nubank Ultravioleta, C6 Carbon"
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:bg-white focus:outline-none"
-                  required
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-500/20"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-slate-500 uppercase tracking-wider mb-1">
-                    Banco Emissor
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                    Banco / Emissor
                   </label>
                   <input
                     type="text"
+                    placeholder="Ex: Nubank, Inter"
                     value={bank}
                     onChange={(e) => setBank(e.target.value)}
-                    placeholder="Ex: Nubank, Itaú"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs"
-                    required
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:bg-white focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
                     Bandeira
                   </label>
                   <select
                     value={brand}
-                    onChange={(e) => setBrand(e.target.value as CardBrand)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold"
+                    onChange={(e) => setBrand(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:bg-white focus:outline-none"
                   >
-                    <option value="mastercard">Mastercard</option>
-                    <option value="visa">Visa</option>
-                    <option value="elo">Elo</option>
-                    <option value="amex">American Express</option>
-                    <option value="other">Outra</option>
+                    <option value="Mastercard">Mastercard</option>
+                    <option value="Visa">Visa</option>
+                    <option value="Elo">Elo</option>
+                    <option value="Amex">Amex</option>
+                    <option value="Hipercard">Hipercard</option>
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="block font-bold text-slate-500 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
                   Limite Total do Cartão (R$)
                 </label>
                 <input
                   type="text"
+                  required
+                  placeholder="Ex: 5000,00"
                   value={limitStr}
                   onChange={(e) => setLimitStr(e.target.value)}
-                  placeholder="Ex: 5000,00"
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-base font-bold text-slate-900 focus:bg-white focus:outline-none"
-                  required
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:bg-white focus:outline-none"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-slate-500 uppercase tracking-wider mb-1">
-                    Dia de Fechamento
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                    Dia Fechamento
                   </label>
                   <input
                     type="number"
@@ -374,14 +378,13 @@ export const CardsView: React.FC<{ onNavigateToInvoices: () => void }> = ({ onNa
                     max={31}
                     value={closingDay}
                     onChange={(e) => setClosingDay(Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold"
-                    required
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:bg-white focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-500 uppercase tracking-wider mb-1">
-                    Dia de Vencimento
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                    Dia Vencimento
                   </label>
                   <input
                     type="number"
@@ -389,46 +392,47 @@ export const CardsView: React.FC<{ onNavigateToInvoices: () => void }> = ({ onNa
                     max={31}
                     value={dueDay}
                     onChange={(e) => setDueDay(Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold"
-                    required
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:bg-white focus:outline-none"
                   />
                 </div>
               </div>
 
+              {/* Color Pick */}
               <div>
-                <label className="block font-bold text-slate-500 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
                   Cor do Cartão
                 </label>
-                <div className="flex items-center gap-2">
-                  {['#8A05BE', '#EC7000', '#0F172A', '#1E3A8A', '#047857', '#B91C1C'].map((c) => (
-                    <button
-                      key={c}
-                      type="button"
-                      onClick={() => setColor(c)}
-                      className={`w-7 h-7 rounded-full border-2 transition-transform ${
-                        color === c ? 'scale-110 border-slate-900' : 'border-transparent'
-                      }`}
-                      style={{ backgroundColor: c }}
-                    />
-                  ))}
+                <div className="flex items-center gap-2 flex-wrap">
+                  {['#8A05BE', '#FF7A00', '#0055FF', '#10B981', '#E11D48', '#0F172A', '#CA8A04'].map(
+                    (c) => (
+                      <button
+                        type="button"
+                        key={c}
+                        onClick={() => setColor(c)}
+                        className={`w-7 h-7 rounded-xl transition-transform ${
+                          color === c ? 'scale-110 ring-2 ring-purple-600 ring-offset-2' : ''
+                        }`}
+                        style={{ backgroundColor: c }}
+                      />
+                    )
+                  )}
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2.5">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl font-semibold"
+                  className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-800"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-5 py-2.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white rounded-xl font-bold shadow-xs flex items-center gap-1.5 cursor-pointer disabled:cursor-not-allowed"
+                  className="px-5 py-2.5 bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white rounded-xl text-xs font-bold shadow-xs disabled:opacity-50"
                 >
-                  <Check className={`w-4 h-4 ${submitting ? 'animate-spin' : ''}`} />
-                  {submitting ? 'Salvando...' : editingCard ? 'Salvar Alterações' : 'Salvar Cartão'}
+                  {submitting ? 'Salvando...' : editingCard ? 'Atualizar Cartão' : 'Criar Cartão'}
                 </button>
               </div>
             </form>

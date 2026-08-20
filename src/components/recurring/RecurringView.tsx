@@ -10,7 +10,6 @@ import {
   CheckCircle2,
   XCircle,
   X,
-  Check,
 } from 'lucide-react';
 import { useFinanceData } from '../../context/FinanceDataContext';
 import { useAuth } from '../../context/AuthContext';
@@ -139,16 +138,6 @@ export const RecurringView: React.FC = () => {
     }
   };
 
-  const handleToggleActive = async (bill: RecurringBill) => {
-    if (!user) return;
-    try {
-      await recurringService.updateRecurringBill(user.uid, bill.id, { active: !bill.active });
-      await refreshData();
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   const handleDelete = async (bill: RecurringBill) => {
     if (!user) return;
     if (window.confirm(`Deseja excluir a conta recorrente "${bill.name}"?`)) {
@@ -157,112 +146,127 @@ export const RecurringView: React.FC = () => {
         await refreshData();
       } catch (err) {
         console.error(err);
-        alert('Erro ao excluir.');
       }
     }
   };
 
-  const totalMonthlyExpenses = recurring
-    .filter((r) => r.active && r.type === 'expense')
-    .reduce((acc, r) => acc + r.amount, 0);
-
-  const totalMonthlyIncome = recurring
-    .filter((r) => r.active && r.type === 'income')
-    .reduce((acc, r) => acc + r.amount, 0);
+  const handleToggleActive = async (bill: RecurringBill) => {
+    if (!user) return;
+    try {
+      await recurringService.updateRecurringBill(user.uid, bill.id, {
+        active: !bill.active,
+      });
+      await refreshData();
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-150">
-      {/* Top Header Card */}
-      <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
+    <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-150">
+      {/* Top Header */}
+      <div className="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="min-w-0">
           <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-            Contas Fixas & Assinaturas
+            Despesas & Receitas Fixas
           </span>
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight mt-0.5">
+          <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-0.5 truncate">
             Lançamentos Recorrentes
           </h2>
-          <p className="text-xs text-slate-500 mt-1">
-            Impacto mensal: {formatCurrency(totalMonthlyExpenses)} em despesas fixas e {formatCurrency(totalMonthlyIncome)} em receitas fixas
+          <p className="text-xs text-slate-500 mt-1 truncate">
+            {recurring.length} assinaturas, salários e contas cadastradas
           </p>
         </div>
 
         <button
           onClick={openCreateModal}
           id="btn-add-recurring"
-          className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all self-start sm:self-auto"
+          className="px-3.5 sm:px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition-all self-start sm:self-auto"
         >
-          <Plus className="w-4 h-4" /> Nova Conta Recorrente
+          <Plus className="w-4 h-4" /> Novo Recorrente
         </button>
       </div>
 
-      {/* List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {recurring.map((bill) => {
           const isIncome = bill.type === 'income';
+          const catName = catMap.get(bill.categoryId) || 'Geral';
 
           return (
             <div
               key={bill.id}
-              className={`bg-white rounded-2xl p-5 border shadow-xs hover:shadow-md transition-all flex flex-col justify-between ${
-                bill.active ? 'border-slate-200' : 'border-slate-200 opacity-60 bg-slate-50/50'
+              className={`bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 md:p-6 border border-slate-200 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between min-w-0 ${
+                !bill.active ? 'opacity-60' : ''
               }`}
             >
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span
-                    className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase flex items-center gap-1 ${
-                      isIncome ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'
-                    }`}
-                  >
-                    {isIncome ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-                    {isIncome ? 'Receita Fixa' : 'Despesa Fixa'}
-                  </span>
-
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => handleToggleActive(bill)}
-                      id={`btn-toggle-recurring-${bill.id}`}
-                      title={bill.active ? 'Desativar' : 'Ativar'}
-                      className="p-1 rounded-md text-slate-400 hover:text-slate-700"
+              <div className="min-w-0">
+                <div className="flex items-center justify-between mb-3 gap-2">
+                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                    <div
+                      className={`w-9 h-9 rounded-2xl flex items-center justify-center shrink-0 ${
+                        isIncome ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'
+                      }`}
                     >
-                      {bill.active ? (
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                      {isIncome ? (
+                        <ArrowUpRight className="w-5 h-5" />
                       ) : (
-                        <XCircle className="w-4 h-4 text-slate-400" />
+                        <ArrowDownRight className="w-5 h-5" />
                       )}
-                    </button>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-bold text-slate-900 text-sm sm:text-base truncate">{bill.name}</h3>
+                      <p className="text-xs text-slate-400 font-medium truncate">{catName}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1 shrink-0">
                     <button
                       onClick={() => openEditModal(bill)}
-                      id={`btn-edit-recurring-${bill.id}`}
-                      className="p-1 rounded-md text-slate-400 hover:text-slate-700"
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+                      title="Editar"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => handleDelete(bill)}
-                      id={`btn-delete-recurring-${bill.id}`}
-                      className="p-1 rounded-md text-slate-400 hover:text-rose-600"
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50"
+                      title="Excluir"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </div>
 
-                <h3 className="font-bold text-slate-900 text-sm">{bill.name}</h3>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  {catMap.get(bill.categoryId) || 'Contas'} • Todo dia {bill.dueDay}
-                </p>
-
-                <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-slate-400 uppercase">Valor</span>
+                <div className="my-3 sm:my-4 p-3 bg-slate-50 rounded-2xl border border-slate-100 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] uppercase font-bold text-slate-400">Valor Fixo</span>
+                    <span className="text-xs font-bold text-slate-500">Todo dia {bill.dueDay}</span>
+                  </div>
                   <span
-                    className={`text-base font-black ${
-                      isIncome ? 'text-emerald-600' : 'text-slate-900'
+                    className={`text-lg sm:text-xl font-black mt-1 block truncate ${
+                      isIncome ? 'text-emerald-600' : 'text-rose-600'
                     }`}
+                    title={formatCurrency(bill.amount)}
                   >
+                    {isIncome ? '+ ' : '- '}
                     {formatCurrency(bill.amount)}
                   </span>
                 </div>
+              </div>
+
+              <div className="pt-2 flex items-center justify-between text-xs text-slate-400 border-t border-slate-100">
+                <span className="capitalize">{bill.frequency === 'monthly' ? 'Mensal' : 'Anual'}</span>
+                <button
+                  onClick={() => handleToggleActive(bill)}
+                  className={`text-xs font-bold px-2 py-0.5 rounded-lg ${
+                    bill.active
+                      ? 'bg-emerald-50 text-emerald-700'
+                      : 'bg-slate-100 text-slate-500'
+                  }`}
+                >
+                  {bill.active ? 'Ativo' : 'Pausado'}
+                </button>
               </div>
             </div>
           );
@@ -271,72 +275,90 @@ export const RecurringView: React.FC = () => {
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
-            <div className="bg-slate-900 text-white p-5 flex items-center justify-between">
-              <h3 className="text-sm font-bold tracking-tight">
-                {editingBill ? 'Editar Recorrência' : 'Nova Conta Recorrente'}
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white rounded-3xl p-5 sm:p-6 w-full max-w-md shadow-2xl border border-slate-200 relative animate-in zoom-in-95 max-h-[92vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+              <h3 className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
+                <Repeat className="w-5 h-5 text-emerald-600" />
+                {editingBill ? 'Editar Recorrente' : 'Novo Lançamento Fixo'}
               </h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-white">
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-4 text-xs font-medium text-slate-700">
-              {errorMsg && (
-                <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl">
-                  {errorMsg}
+            {errorMsg && (
+              <div className="mb-4 p-3 bg-rose-50 text-rose-700 border border-rose-200 rounded-xl text-xs font-medium">
+                {errorMsg}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                  Tipo
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setType('expense')}
+                    className={`py-2 rounded-xl text-xs font-bold transition-all ${
+                      type === 'expense'
+                        ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                        : 'bg-slate-100 text-slate-600'
+                    }`}
+                  >
+                    Despesa Fixa
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setType('income')}
+                    className={`py-2 rounded-xl text-xs font-bold transition-all ${
+                      type === 'income'
+                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        : 'bg-slate-100 text-slate-600'
+                    }`}
+                  >
+                    Receita Fixa
+                  </button>
                 </div>
-              )}
+              </div>
 
               <div>
-                <label className="block font-bold text-slate-500 uppercase tracking-wider mb-1">
-                  Nome do Lançamento
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                  Nome / Descrição
                 </label>
                 <input
                   type="text"
+                  required
+                  placeholder="Ex: Netflix, Aluguel, Salário"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Ex: Aluguel, Netflix, Internet, Salário"
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:bg-white focus:outline-none"
-                  required
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-slate-500 uppercase tracking-wider mb-1">
-                    Tipo
-                  </label>
-                  <select
-                    value={type}
-                    onChange={(e) => setType(e.target.value as any)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold"
-                  >
-                    <option value="expense">Despesa Fixa</option>
-                    <option value="income">Receita Fixa</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
                     Valor (R$)
                   </label>
                   <input
                     type="text"
+                    required
+                    placeholder="Ex: 55,90"
                     value={amountStr}
                     onChange={(e) => setAmountStr(e.target.value)}
-                    placeholder="0,00"
-                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-slate-900"
-                    required
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:bg-white focus:outline-none"
                   />
                 </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-slate-500 uppercase tracking-wider mb-1">
-                    Dia de Vencimento
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                    Dia Vencimento
                   </label>
                   <input
                     type="number"
@@ -344,35 +366,19 @@ export const RecurringView: React.FC = () => {
                     max={31}
                     value={dueDay}
                     onChange={(e) => setDueDay(Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold"
-                    required
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:bg-white focus:outline-none"
                   />
-                </div>
-
-                <div>
-                  <label className="block font-bold text-slate-500 uppercase tracking-wider mb-1">
-                    Periodicidade
-                  </label>
-                  <select
-                    value={frequency}
-                    onChange={(e) => setFrequency(e.target.value as RecurringFrequency)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold"
-                  >
-                    <option value="monthly">Mensal</option>
-                    <option value="weekly">Semanal</option>
-                    <option value="yearly">Anual</option>
-                  </select>
                 </div>
               </div>
 
               <div>
-                <label className="block font-bold text-slate-500 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
                   Categoria
                 </label>
                 <select
                   value={categoryId}
                   onChange={(e) => setCategoryId(e.target.value)}
-                  className="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:bg-white focus:outline-none"
                 >
                   {categories.map((c) => (
                     <option key={c.id} value={c.id}>
@@ -382,21 +388,20 @@ export const RecurringView: React.FC = () => {
                 </select>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2.5">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl font-semibold"
+                  className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-800"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white rounded-xl font-bold shadow-xs flex items-center gap-1.5 cursor-pointer disabled:cursor-not-allowed"
+                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-xs disabled:opacity-50"
                 >
-                  <Check className={`w-4 h-4 ${submitting ? 'animate-spin' : ''}`} />
-                  {submitting ? 'Salvando...' : editingBill ? 'Salvar Alterações' : 'Salvar Recorrência'}
+                  {submitting ? 'Salvando...' : editingBill ? 'Atualizar' : 'Criar Recorrente'}
                 </button>
               </div>
             </form>

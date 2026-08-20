@@ -22,16 +22,18 @@ export const RecentTransactions: React.FC<{ onNavigateToTransactions: () => void
   const catMap = new Map<string, Category>(categories.map((c) => [c.id, c]));
 
   return (
-    <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs flex flex-col justify-between">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h3 className="text-sm font-bold text-slate-800 tracking-tight">Gastos Recentes</h3>
-          <p className="text-xs text-slate-400">Últimas movimentações deste mês</p>
+    <div className="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200 shadow-2xs flex flex-col justify-between h-full">
+      <div className="flex items-center justify-between mb-4 gap-2">
+        <div className="min-w-0">
+          <h3 className="text-sm sm:text-base font-bold text-slate-800 tracking-tight truncate">
+            Gastos Recentes
+          </h3>
+          <p className="text-xs text-slate-400 truncate">Últimas movimentações deste mês</p>
         </div>
         <button
           onClick={onNavigateToTransactions}
           id="btn-view-all-transactions"
-          className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 hover:underline"
+          className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 hover:underline shrink-0"
         >
           Ver Todas ({transactions.length})
         </button>
@@ -44,7 +46,7 @@ export const RecentTransactions: React.FC<{ onNavigateToTransactions: () => void
           <button
             onClick={() => openTransactionModal('expense')}
             id="btn-empty-add-trans"
-            className="mt-3 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1 shadow-xs"
+            className="mt-3 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold flex items-center gap-1 shadow-2xs"
           >
             <Plus className="w-3.5 h-3.5" /> Adicionar Transação
           </button>
@@ -58,10 +60,10 @@ export const RecentTransactions: React.FC<{ onNavigateToTransactions: () => void
             const isTransfer = t.type === 'transfer';
 
             return (
-              <div key={t.id} className="py-3 flex items-center justify-between gap-3 group">
-                <div className="flex items-center gap-3 min-w-0">
+              <div key={t.id} className="py-2.5 sm:py-3 flex items-center justify-between gap-2.5 sm:gap-3 group min-w-0">
+                <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
                   <div
-                    className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border"
+                    className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shrink-0 border"
                     style={{
                       backgroundColor: `${cat?.color || '#94A3B8'}15`,
                       borderColor: `${cat?.color || '#94A3B8'}30`,
@@ -81,16 +83,16 @@ export const RecentTransactions: React.FC<{ onNavigateToTransactions: () => void
                     )}
                   </div>
 
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <p className="text-xs font-bold text-slate-800 truncate">{t.description}</p>
-                    <div className="flex items-center gap-2 text-[11px] text-slate-400">
-                      <span>{cat?.name || (isTransfer ? 'Transferência' : 'Geral')}</span>
+                    <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] text-slate-400 truncate">
+                      <span className="truncate">{cat?.name || (isTransfer ? 'Transferência' : 'Geral')}</span>
                       <span>•</span>
-                      <span>{formatDateBR(t.date)}</span>
+                      <span className="shrink-0">{formatDateBR(t.date)}</span>
                       {t.isInstallment && (
                         <>
                           <span>•</span>
-                          <span className="text-purple-600 font-semibold">
+                          <span className="text-purple-600 font-semibold shrink-0">
                             {t.currentInstallment}/{t.totalInstallments}
                           </span>
                         </>
@@ -99,9 +101,9 @@ export const RecentTransactions: React.FC<{ onNavigateToTransactions: () => void
                   </div>
                 </div>
 
-                <div className="text-right shrink-0">
+                <div className="text-right shrink-0 ml-2">
                   <span
-                    className={`text-xs font-black ${
+                    className={`text-xs font-black whitespace-nowrap ${
                       isIncome
                         ? 'text-emerald-600'
                         : isTransfer

@@ -9,7 +9,6 @@ import {
   PiggyBank,
   TrendingUp,
   X,
-  Check,
 } from 'lucide-react';
 import { useFinanceData } from '../../context/FinanceDataContext';
 import { useAuth } from '../../context/AuthContext';
@@ -140,75 +139,83 @@ export const AccountsView: React.FC = () => {
         return Wallet;
       case 'investment':
         return TrendingUp;
+      case 'checking':
       default:
         return Landmark;
     }
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-150">
+    <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-150">
       {/* Top Header Card */}
-      <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
+      <div className="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="min-w-0">
           <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-            Patrimônio Líquido em Contas
+            Contas & Carteiras
           </span>
-          <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-0.5">
-            {formatCurrency(summary.totalBalance)}
+          <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-0.5 truncate">
+            {accounts.length} Contas Cadastradas
           </h2>
-          <p className="text-xs text-slate-500 mt-1">
-            {accounts.length} contas bancárias e carteiras cadastradas
+          <p className="text-xs text-slate-500 mt-1 truncate">
+            Saldo acumulado total de {formatCurrency(summary.totalBalance)}
           </p>
         </div>
 
         <button
           onClick={openCreateModal}
           id="btn-add-account"
-          className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all self-start sm:self-auto"
+          className="px-3.5 sm:px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition-all self-start sm:self-auto"
         >
-          <Plus className="w-4 h-4" /> Nova Conta Bancária
+          <Plus className="w-4 h-4" /> Nova Conta
         </button>
       </div>
 
       {/* Accounts Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {accounts.map((acc) => {
           const Icon = getTypeIcon(acc.type);
+
           return (
             <div
               key={acc.id}
-              className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
+              className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 md:p-6 border border-slate-200 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between relative overflow-hidden min-w-0"
             >
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
+              {/* Top Accent Bar */}
+              <div
+                className="absolute top-0 left-0 right-0 h-2"
+                style={{ backgroundColor: acc.color || '#10B981' }}
+              />
+
+              <div className="min-w-0">
+                <div className="flex items-center justify-between mb-4 gap-2">
+                  <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
                     <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold shadow-xs"
-                      style={{ backgroundColor: acc.color || '#0EA5E9' }}
+                      className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-2xs shrink-0"
+                      style={{ backgroundColor: acc.color || '#10B981' }}
                     >
                       <Icon className="w-5 h-5" />
                     </div>
-                    <div>
-                      <h4 className="font-bold text-slate-800 text-sm tracking-tight">{acc.name}</h4>
-                      <p className="text-[11px] text-slate-400 font-medium">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-bold text-slate-900 text-sm sm:text-base truncate">{acc.name}</h3>
+                      <p className="text-xs text-slate-400 font-medium truncate">
                         {acc.bank} • {getTypeLabel(acc.type)}
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 shrink-0">
                     <button
                       onClick={() => openEditModal(acc)}
-                      id={`btn-edit-account-${acc.id}`}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                      id={`btn-edit-acc-${acc.id}`}
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100"
                       title="Editar Conta"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => handleDelete(acc)}
-                      id={`btn-delete-account-${acc.id}`}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                      id={`btn-delete-acc-${acc.id}`}
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50"
                       title="Excluir Conta"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -216,115 +223,127 @@ export const AccountsView: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="pt-2 border-t border-slate-100">
-                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                    Saldo Disponível
+                <div className="my-3 sm:my-4 p-3 bg-slate-50 rounded-2xl border border-slate-100 min-w-0">
+                  <span className="block text-[10px] uppercase font-bold text-slate-400">
+                    Saldo em Conta
                   </span>
-                  <div className="text-xl font-black text-slate-900 mt-0.5">
+                  <span
+                    className={`text-lg sm:text-xl font-black mt-0.5 block truncate ${
+                      acc.currentBalance >= 0 ? 'text-slate-900' : 'text-rose-600'
+                    }`}
+                    title={formatCurrency(acc.currentBalance)}
+                  >
                     {formatCurrency(acc.currentBalance)}
-                  </div>
+                  </span>
                 </div>
+              </div>
+
+              <div className="pt-2 flex items-center justify-between text-xs text-slate-400 border-t border-slate-100">
+                <span className="truncate">Saldo inicial: {formatCurrency(acc.initialBalance || 0)}</span>
               </div>
             </div>
           );
         })}
       </div>
 
-      {/* Account Modal */}
+      {/* Modal for Creating / Editing Account */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
-            <div className="bg-slate-900 text-white p-5 flex items-center justify-between">
-              <h3 className="text-sm font-bold tracking-tight">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white rounded-3xl p-5 sm:p-6 w-full max-w-md shadow-2xl border border-slate-200 relative animate-in zoom-in-95 max-h-[92vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+              <h3 className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
+                <Landmark className="w-5 h-5 text-emerald-600" />
                 {editingAccount ? 'Editar Conta' : 'Nova Conta Bancária'}
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-slate-400 hover:text-white p-1 rounded-lg"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-4 text-xs font-medium text-slate-700">
-              {errorMsg && (
-                <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-xs">
-                  {errorMsg}
-                </div>
-              )}
+            {errorMsg && (
+              <div className="mb-4 p-3 bg-rose-50 text-rose-700 border border-rose-200 rounded-xl text-xs font-medium">
+                {errorMsg}
+              </div>
+            )}
 
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block font-bold text-slate-500 uppercase tracking-wider mb-1">
-                  Nome da Conta / Banco
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                  Nome da Conta
                 </label>
                 <input
                   type="text"
+                  required
+                  placeholder="Ex: Nubank, Inter, Carteira Dinheiro"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Ex: Nubank, Itaú, Carteira"
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:bg-white focus:outline-none"
-                  required
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                 />
               </div>
 
-              <div>
-                <label className="block font-bold text-slate-500 uppercase tracking-wider mb-1">
-                  Instituição Financeira
-                </label>
-                <input
-                  type="text"
-                  value={bank}
-                  onChange={(e) => setBank(e.target.value)}
-                  placeholder="Ex: Nu Pagamentos S.A., Banco Itaú"
-                  className="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-800 focus:bg-white focus:outline-none"
-                />
-              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                    Instituição / Banco
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ex: Itaú, Bradesco"
+                    value={bank}
+                    onChange={(e) => setBank(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:bg-white focus:outline-none"
+                  />
+                </div>
 
-              <div>
-                <label className="block font-bold text-slate-500 uppercase tracking-wider mb-1">
-                  Tipo de Conta
-                </label>
-                <select
-                  value={type}
-                  onChange={(e) => setType(e.target.value as AccountType)}
-                  className="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:bg-white focus:outline-none"
-                >
-                  <option value="checking">Conta Corrente</option>
-                  <option value="savings">Conta Poupança</option>
-                  <option value="cash">Dinheiro em Espécie / Carteira</option>
-                  <option value="investment">Investimentos / Renda Fixa</option>
-                  <option value="other">Outra</option>
-                </select>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                    Tipo de Conta
+                  </label>
+                  <select
+                    value={type}
+                    onChange={(e) => setType(e.target.value as AccountType)}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:bg-white focus:outline-none"
+                  >
+                    <option value="checking">Conta Corrente</option>
+                    <option value="savings">Poupança</option>
+                    <option value="cash">Dinheiro Físico</option>
+                    <option value="investment">Investimento</option>
+                  </select>
+                </div>
               </div>
 
               {!editingAccount && (
                 <div>
-                  <label className="block font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
                     Saldo Inicial (R$)
                   </label>
                   <input
                     type="text"
+                    placeholder="0,00"
                     value={initialBalanceStr}
                     onChange={(e) => setInitialBalanceStr(e.target.value)}
-                    placeholder="0,00"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-base font-bold text-slate-900 focus:bg-white focus:outline-none"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:bg-white focus:outline-none"
                   />
                 </div>
               )}
 
+              {/* Color Pick */}
               <div>
-                <label className="block font-bold text-slate-500 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
                   Cor de Identificação
                 </label>
-                <div className="flex items-center gap-2">
-                  {['#8A05BE', '#EC7000', '#10B981', '#0EA5E9', '#3B82F6', '#EF4444', '#64748B'].map(
+                <div className="flex items-center gap-2 flex-wrap">
+                  {['#10B981', '#0055FF', '#8A05BE', '#FF7A00', '#E11D48', '#0F172A', '#0284C7'].map(
                     (c) => (
                       <button
-                        key={c}
                         type="button"
+                        key={c}
                         onClick={() => setColor(c)}
-                        className={`w-7 h-7 rounded-full border-2 transition-transform ${
-                          color === c ? 'scale-110 border-slate-900' : 'border-transparent'
+                        className={`w-7 h-7 rounded-xl transition-transform ${
+                          color === c ? 'scale-110 ring-2 ring-emerald-600 ring-offset-2' : ''
                         }`}
                         style={{ backgroundColor: c }}
                       />
@@ -333,21 +352,20 @@ export const AccountsView: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2.5">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl font-semibold"
+                  className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-800"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white rounded-xl font-bold shadow-xs flex items-center gap-1.5 cursor-pointer disabled:cursor-not-allowed"
+                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-xs disabled:opacity-50"
                 >
-                  <Check className={`w-4 h-4 ${submitting ? 'animate-spin' : ''}`} />
-                  {submitting ? 'Salvando...' : editingAccount ? 'Salvar Alterações' : 'Salvar Conta'}
+                  {submitting ? 'Salvando...' : editingAccount ? 'Atualizar Conta' : 'Criar Conta'}
                 </button>
               </div>
             </form>
